@@ -1,5 +1,5 @@
 -- =============================================================================
--- QRINZ UI LIBRARY BASE CODE (MODERN BLUE & PURPLE THEME - V2 MOBILE)
+-- QRINZ UI LIBRARY BASE CODE (MODERN FRESH THEME)
 -- =============================================================================
 
 local QrinzUI = {}
@@ -12,18 +12,18 @@ local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
 
--- Color Palette (Dicerahkan agar tidak terlalu gelap)
+-- Color Palette (Diperbarui agar lebih terang & fresh)
 local Colors = {
-    MainBG = Color3.fromRGB(15, 15, 22),       -- Lebih terang sedikit dari sebelumnya
-    ElementBG = Color3.fromRGB(26, 26, 38),    -- Background elemen lebih cerah
-    Stroke = Color3.fromRGB(65, 65, 90),       -- Garis tepi default lebih terlihat
-    StrokeActive = Color3.fromRGB(140, 60, 255),
+    MainBG = Color3.fromRGB(15, 15, 22),
+    ElementBG = Color3.fromRGB(28, 28, 40),
+    Stroke = Color3.fromRGB(75, 75, 100), -- Diperterang dari sebelumnya
+    StrokeActive = Color3.fromRGB(160, 90, 255),
     TextWhite = Color3.fromRGB(255, 255, 255),
-    TextMuted = Color3.fromRGB(160, 165, 180), -- Teks abu-abu lebih terang
-    Blue = Color3.fromRGB(0, 180, 255),
-    Purple = Color3.fromRGB(140, 60, 255),
-    Red = Color3.fromRGB(255, 75, 75),
-    Green = Color3.fromRGB(75, 255, 75)
+    TextMuted = Color3.fromRGB(160, 165, 180),
+    Blue = Color3.fromRGB(0, 200, 255),
+    Purple = Color3.fromRGB(160, 90, 255),
+    Red = Color3.fromRGB(255, 85, 85),
+    Green = Color3.fromRGB(85, 255, 85)
 }
 
 local BluePurpleGradient = ColorSequence.new{
@@ -40,8 +40,8 @@ NotifyGui.Parent = PlayerGui
 
 local NotifyContainer = Instance.new("Frame")
 NotifyContainer.Name = "NotifyContainer"
-NotifyContainer.Size = UDim2.new(0, 260, 0, 400) -- Dikecilkan untuk mobile
-NotifyContainer.Position = UDim2.new(1, -270, 1, -20)
+NotifyContainer.Size = UDim2.new(0, 280, 0, 400)
+NotifyContainer.Position = UDim2.new(1, -290, 1, -20)
 NotifyContainer.AnchorPoint = Vector2.new(0, 1)
 NotifyContainer.BackgroundTransparency = 1
 NotifyContainer.Parent = NotifyGui
@@ -61,7 +61,9 @@ local function MakeDraggable(uiInstance, targetFrame)
             dragStart = input.Position
             startPos = targetFrame.Position
             input.Changed:Connect(function()
-                if input.UserInputState == Enum.UserInputState.End then dragging = false end
+                if input.UserInputState == Enum.UserInputState.End then
+                    dragging = false
+                end
             end)
         end
     end)
@@ -99,12 +101,17 @@ function QrinzUI:Notification(options)
     Corner.Parent = NotifyFrame
 
     local Stroke = Instance.new("UIStroke")
-    Stroke.Color = Colors.Stroke
+    Stroke.Color = Colors.StrokeActive -- Highlight terang di notifikasi
     Stroke.Thickness = 1.2
     Stroke.Parent = NotifyFrame
-    local StrokeGrad = Instance.new("UIGradient")
-    StrokeGrad.Color = BluePurpleGradient
-    StrokeGrad.Parent = Stroke
+
+    local AccentBar = Instance.new("Frame")
+    AccentBar.Size = UDim2.new(0, 4, 1, 0)
+    AccentBar.BorderSizePixel = 0
+    AccentBar.Parent = NotifyFrame
+    local AccentGradient = Instance.new("UIGradient")
+    AccentGradient.Color = BluePurpleGradient
+    AccentGradient.Parent = AccentBar
 
     local TitleLabel = Instance.new("TextLabel")
     TitleLabel.Size = UDim2.new(1, -20, 0, 20)
@@ -140,12 +147,14 @@ function QrinzUI:Notification(options)
             BackgroundTransparency = 1
         })
         closeTween:Play()
-        closeTween.Completed:Connect(function() NotifyFrame:Destroy() end)
+        closeTween.Completed:Connect(function()
+            NotifyFrame:Destroy()
+        end)
     end)
 end
 
 -- =============================================================================
--- WINDOW CREATION & KEY SYSTEM
+-- WINDOW CREATION
 -- =============================================================================
 function QrinzUI:CreateWindow(options)
     local window = setmetatable({}, { __index = self })
@@ -154,8 +163,7 @@ function QrinzUI:CreateWindow(options)
     window.Author = options.Author or ""
     window.Visible = true
     window.ToggleIcon = options.ToggleIcon or "rbxassetid://10734896206"
-    window.Tabs = {}        -- Menyimpan referensi tombol tab
-    window.TabPages = {}    -- Menyimpan referensi halaman tab
+    window.Tabs = {}
 
     local ScreenGui = Instance.new("ScreenGui")
     ScreenGui.Name = "QrinzUIHub"
@@ -164,11 +172,10 @@ function QrinzUI:CreateWindow(options)
     ScreenGui.Parent = PlayerGui
     window.ScreenGui = ScreenGui
 
-    -- Ukuran diperkecil agar pas di mobile
     local MainFrame = Instance.new("Frame")
     MainFrame.Name = "MainFrame"
-    MainFrame.Size = UDim2.new(0, 315, 0, 380)
-    MainFrame.Position = UDim2.new(0.5, -157, 0.5, -190)
+    MainFrame.Size = UDim2.new(0, 320, 0, 380) -- Ukuran diperkecil agar pas di mobile
+    MainFrame.Position = UDim2.new(0.5, -160, 0.5, -190)
     MainFrame.BackgroundColor3 = Colors.MainBG
     MainFrame.BorderSizePixel = 0
     MainFrame.ClipsDescendants = true
@@ -179,7 +186,6 @@ function QrinzUI:CreateWindow(options)
     MainCorner.CornerRadius = UDim.new(0, 12)
     MainCorner.Parent = MainFrame
     
-    -- Efek Glowing / Terang di Tepi Jendela Utama
     local MainStroke = Instance.new("UIStroke")
     MainStroke.Thickness = 1.5
     MainStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
@@ -195,8 +201,8 @@ function QrinzUI:CreateWindow(options)
     TopBar.Parent = MainFrame
     
     local TitleLabel = Instance.new("TextLabel")
-    TitleLabel.Size = UDim2.new(1, -30, 0, 22)
-    TitleLabel.Position = UDim2.new(0, 15, 0, 6)
+    TitleLabel.Size = UDim2.new(1, -30, 0, 25)
+    TitleLabel.Position = UDim2.new(0, 15, 0, 5)
     TitleLabel.Text = window.Title
     TitleLabel.Font = Enum.Font.GothamBold
     TitleLabel.TextSize = 15
@@ -211,36 +217,42 @@ function QrinzUI:CreateWindow(options)
         AuthorLabel.Position = UDim2.new(0, 15, 0, 24)
         AuthorLabel.Text = window.Author
         AuthorLabel.Font = Enum.Font.Gotham
-        AuthorLabel.TextSize = 11
+        AuthorLabel.TextSize = 10
         AuthorLabel.TextColor3 = Colors.TextMuted
         AuthorLabel.TextXAlignment = Enum.TextXAlignment.Left
         AuthorLabel.BackgroundTransparency = 1
         AuthorLabel.Parent = TopBar
     end
 
-    -- TAB CONTAINER (Bisa Di-scroll Ke Samping)
-    local TabContainer = Instance.new("ScrollingFrame")
-    TabContainer.Name = "TabContainer"
-    TabContainer.Size = UDim2.new(1, -20, 0, 34)
-    TabContainer.Position = UDim2.new(0, 10, 0, 50)
-    TabContainer.BackgroundTransparency = 1
-    TabContainer.ScrollBarThickness = 0 -- Hilangkan scrollbar agar bersih
-    TabContainer.ScrollingDirection = Enum.ScrollingDirection.X
-    TabContainer.CanvasSize = UDim2.new(0, 0, 0, 0)
-    TabContainer.Parent = MainFrame
-    window.TabContainer = TabContainer
+    local Divider = Instance.new("Frame")
+    Divider.Size = UDim2.new(1, 0, 0, 1)
+    Divider.Position = UDim2.new(0, 0, 0, 44)
+    Divider.BackgroundColor3 = Colors.Stroke
+    Divider.BackgroundTransparency = 0.4
+    Divider.BorderSizePixel = 0
+    Divider.Parent = TopBar
 
-    local TabListLayout = Instance.new("UIListLayout")
-    TabListLayout.FillDirection = Enum.FillDirection.Horizontal
-    TabListLayout.SortOrder = Enum.SortOrder.LayoutOrder
-    TabListLayout.Padding = UDim.new(0, 6)
-    TabListLayout.Parent = TabContainer
+    -- Sistem Tab Header (Bisa digeser/scroll horizontal)
+    local TabHeader = Instance.new("ScrollingFrame")
+    TabHeader.Name = "TabHeader"
+    TabHeader.Size = UDim2.new(1, -20, 0, 35)
+    TabHeader.Position = UDim2.new(0, 10, 0, 50)
+    TabHeader.BackgroundTransparency = 1
+    TabHeader.ScrollBarThickness = 0 -- Scrollbar disembunyikan agar bersih
+    TabHeader.ScrollingDirection = Enum.ScrollingDirection.X
+    TabHeader.Parent = MainFrame
+    window.TabHeader = TabHeader
 
-    TabListLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
-        TabContainer.CanvasSize = UDim2.new(0, TabListLayout.AbsoluteContentSize.X, 0, 0)
+    local TabHeaderLayout = Instance.new("UIListLayout")
+    TabHeaderLayout.FillDirection = Enum.FillDirection.Horizontal
+    TabHeaderLayout.SortOrder = Enum.SortOrder.LayoutOrder
+    TabHeaderLayout.Padding = UDim.new(0, 8)
+    TabHeaderLayout.Parent = TabHeader
+    
+    TabHeaderLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+        TabHeader.CanvasSize = UDim2.new(0, TabHeaderLayout.AbsoluteContentSize.X, 0, 0)
     end)
 
-    -- PAGE CONTAINER (Wadah untuk halaman-halaman menu)
     local Container = Instance.new("Frame")
     Container.Name = "Container"
     Container.Size = UDim2.new(1, -20, 1, -95)
@@ -252,8 +264,8 @@ function QrinzUI:CreateWindow(options)
 
     local FloatButton = Instance.new("ImageButton")
     FloatButton.Name = "FloatToggleButton"
-    FloatButton.Size = UDim2.new(0, 42, 0, 42)
-    FloatButton.Position = UDim2.new(0, 25, 0, 25)
+    FloatButton.Size = UDim2.new(0, 45, 0, 45)
+    FloatButton.Position = UDim2.new(0, 20, 0, 20)
     FloatButton.BackgroundColor3 = Colors.ElementBG
     FloatButton.Image = window.ToggleIcon
     FloatButton.ImageColor3 = Colors.TextWhite
@@ -261,7 +273,7 @@ function QrinzUI:CreateWindow(options)
     FloatButton.Visible = not options.KeySystem
 
     local FloatCorner = Instance.new("UICorner")
-    FloatCorner.CornerRadius = UDim.new(0, 10)
+    FloatCorner.CornerRadius = UDim.new(0, 12)
     FloatCorner.Parent = FloatButton
 
     local FloatStroke = Instance.new("UIStroke")
@@ -276,11 +288,11 @@ function QrinzUI:CreateWindow(options)
         if window.Visible then
             MainFrame.Visible = true
             TweenService:Create(MainFrame, TweenInfo.new(0.3, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
-                Size = UDim2.new(0, 315, 0, 380)
+                Size = UDim2.new(0, 320, 0, 380)
             }):Play()
         else
             local closeTween = TweenService:Create(MainFrame, TweenInfo.new(0.25, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {
-                Size = UDim2.new(0, 315, 0, 0)
+                Size = UDim2.new(0, 320, 0, 0)
             })
             closeTween:Play()
             closeTween.Completed:Connect(function()
@@ -292,170 +304,32 @@ function QrinzUI:CreateWindow(options)
     MakeDraggable(TopBar, MainFrame)
     MakeDraggable(FloatButton, FloatButton)
 
-    -- INTEGRASI KEY SYSTEM
-    if options.KeySystem then
-        Container.Visible = false
-        TabContainer.Visible = false
-        
-        local KeyConfig = options.KeySystem
-        local ApiData = KeyConfig.API[1]
-        local Service = QrinzUI.Services[ApiData.Type]
-        
-        if Service then
-            local ApiHandler = Service.New(ApiData.ServiceId, ApiData.SuperId)
-            
-            local KeyFrame = Instance.new("Frame")
-            KeyFrame.Name = "KeyFrame"
-            KeyFrame.Size = UDim2.new(1, -20, 1, -65)
-            KeyFrame.Position = UDim2.new(0, 10, 0, 55)
-            KeyFrame.BackgroundTransparency = 1
-            KeyFrame.Parent = MainFrame
-            
-            local NoteLabel = Instance.new("TextLabel")
-            NoteLabel.Size = UDim2.new(1, -10, 0, 70)
-            NoteLabel.Position = UDim2.new(0, 5, 0, 10)
-            NoteLabel.Text = KeyConfig.Note or "Please get and verify your secure key to access the hub features."
-            NoteLabel.Font = Enum.Font.GothamMedium
-            NoteLabel.TextSize = 12
-            NoteLabel.TextColor3 = Colors.TextMuted
-            NoteLabel.TextWrapped = true
-            NoteLabel.TextYAlignment = Enum.TextYAlignment.Center
-            NoteLabel.BackgroundTransparency = 1
-            NoteLabel.Parent = KeyFrame
-            
-            local InputFrame = Instance.new("Frame")
-            InputFrame.Size = UDim2.new(1, -10, 0, 42)
-            InputFrame.Position = UDim2.new(0, 5, 0, 95)
-            InputFrame.BackgroundColor3 = Colors.ElementBG
-            InputFrame.Parent = KeyFrame
-            
-            local InputCorner = Instance.new("UICorner")
-            InputCorner.CornerRadius = UDim.new(0, 8)
-            InputCorner.Parent = InputFrame
-            
-            local InputStroke = Instance.new("UIStroke")
-            InputStroke.Color = Colors.Stroke
-            InputStroke.Thickness = 1.2
-            InputStroke.Parent = InputFrame
-            
-            local TextBox = Instance.new("TextBox")
-            TextBox.Size = UDim2.new(1, -24, 1, 0)
-            TextBox.Position = UDim2.new(0, 12, 0, 0)
-            TextBox.BackgroundTransparency = 1
-            TextBox.Text = ""
-            TextBox.PlaceholderText = "Enter key here..."
-            TextBox.PlaceholderColor3 = Colors.TextMuted
-            TextBox.Font = Enum.Font.GothamMedium
-            TextBox.TextSize = 13
-            TextBox.TextColor3 = Colors.TextWhite
-            TextBox.TextXAlignment = Enum.TextXAlignment.Left
-            TextBox.Parent = InputFrame
-            
-            TextBox.Focused:Connect(function()
-                TweenService:Create(InputStroke, TweenInfo.new(0.25), {Color = Colors.StrokeActive}):Play()
-            end)
-            TextBox.FocusLost:Connect(function()
-                TweenService:Create(InputStroke, TweenInfo.new(0.25), {Color = Colors.Stroke}):Play()
-            end)
-            
-            local ButtonContainer = Instance.new("Frame")
-            ButtonContainer.Size = UDim2.new(1, -10, 0, 40)
-            ButtonContainer.Position = UDim2.new(0, 5, 0, 150)
-            ButtonContainer.BackgroundTransparency = 1
-            ButtonContainer.Parent = KeyFrame
-            
-            local UIList = Instance.new("UIListLayout")
-            UIList.FillDirection = Enum.FillDirection.Horizontal
-            UIList.Padding = UDim.new(0, 10)
-            UIList.SortOrder = Enum.SortOrder.LayoutOrder
-            UIList.Parent = ButtonContainer
-            
-            local CopyBtn = Instance.new("TextButton")
-            CopyBtn.Size = UDim2.new(0.5, -5, 1, 0)
-            CopyBtn.BackgroundColor3 = Colors.ElementBG
-            CopyBtn.Text = "Copy Link"
-            CopyBtn.Font = Enum.Font.GothamBold
-            CopyBtn.TextSize = 12
-            CopyBtn.TextColor3 = Colors.TextWhite
-            CopyBtn.AutoButtonColor = false
-            CopyBtn.Parent = ButtonContainer
-            local CopyCorner = Instance.new("UICorner")
-            CopyCorner.CornerRadius = UDim.new(0, 8)
-            CopyCorner.Parent = CopyBtn
-            local CopyStroke = Instance.new("UIStroke")
-            CopyStroke.Color = Colors.Stroke
-            CopyStroke.Thickness = 1
-            CopyStroke.Parent = CopyBtn
-            
-            local VerifyBtn = Instance.new("TextButton")
-            VerifyBtn.Size = UDim2.new(0.5, -5, 1, 0)
-            VerifyBtn.BackgroundColor3 = Colors.Purple
-            VerifyBtn.Text = "Verify"
-            VerifyBtn.Font = Enum.Font.GothamBold
-            VerifyBtn.TextSize = 12
-            VerifyBtn.TextColor3 = Colors.TextWhite
-            VerifyBtn.AutoButtonColor = false
-            VerifyBtn.Parent = ButtonContainer
-            local VerifyCorner = Instance.new("UICorner")
-            VerifyCorner.CornerRadius = UDim.new(0, 8)
-            VerifyCorner.Parent = VerifyBtn
-            
-            CopyBtn.MouseButton1Click:Connect(function()
-                ApiHandler.Copy()
-                self:Notification({Title = "System", Content = "Key link copied!", Duration = 3})
-                CopyBtn.Text = "Copied!"
-                task.wait(1.5)
-                CopyBtn.Text = "Copy Link"
-            end)
-            
-            VerifyBtn.MouseButton1Click:Connect(function()
-                VerifyBtn.Text = "Checking..."
-                local success, msg = ApiHandler.Verify(TextBox.Text)
-                
-                if success then
-                    VerifyBtn.Text = "Granted!"
-                    TweenService:Create(InputStroke, TweenInfo.new(0.2), {Color = Colors.Green}):Play()
-                    task.wait(0.8)
-                    KeyFrame:Destroy()
-                    FloatButton.Visible = true
-                    Container.Visible = true
-                    TabContainer.Visible = true -- Munculkan tab
-                else
-                    VerifyBtn.Text = "Failed"
-                    TweenService:Create(InputStroke, TweenInfo.new(0.2), {Color = Colors.Red}):Play()
-                    self:Notification({Title = "Error", Content = msg or "Invalid key.", Duration = 4})
-                    task.wait(1.5)
-                    VerifyBtn.Text = "Verify"
-                    TweenService:Create(InputStroke, TweenInfo.new(0.2), {Color = Colors.Stroke}):Play()
-                end
-            end)
-        end
-    end
-
     return window
 end
 
 -- =============================================================================
--- TAB SYSTEM & BASE MENU ELEMENTS
+-- TAB SYSTEM
 -- =============================================================================
 function QrinzUI:Tab(options)
-    local tabTitle = options.Title or "Tab"
+    local tabName = options.Title or "Tab"
+    local tab = {}
     
-    -- Membuat Tombol Tab di TabContainer
+    -- Tombol Tab di Header
     local TabButton = Instance.new("TextButton")
-    TabButton.Name = tabTitle .. "Btn"
-    TabButton.Size = UDim2.new(0, 0, 1, 0) -- Lebar diatur dinamis di bawah
+    TabButton.Name = tabName.."_Btn"
+    TabButton.Size = UDim2.new(0, 0, 1, -6)
+    TabButton.Position = UDim2.new(0, 0, 0, 3)
     TabButton.BackgroundColor3 = Colors.ElementBG
-    TabButton.Text = tabTitle
-    TabButton.Font = Enum.Font.GothamBold
+    TabButton.Text = tabName
+    TabButton.Font = Enum.Font.GothamMedium
     TabButton.TextSize = 12
     TabButton.TextColor3 = Colors.TextMuted
     TabButton.AutoButtonColor = false
-    TabButton.Parent = self.TabContainer
+    TabButton.Parent = self.TabHeader
     
-    -- Sesuaikan lebar tombol tab dengan panjang teksnya
-    local textBounds = game:GetService("TextService"):GetTextSize(tabTitle, 12, Enum.Font.GothamBold, Vector2.new(999, 999))
-    TabButton.Size = UDim2.new(0, textBounds.X + 24, 1, 0)
+    -- Menyesuaikan lebar tombol dengan teks
+    local TextSize = game:GetService("TextService"):GetTextSize(tabName, 12, Enum.Font.GothamMedium, Vector2.new(math.huge, math.huge))
+    TabButton.Size = UDim2.new(0, TextSize.X + 24, 1, -6)
 
     local TabBtnCorner = Instance.new("UICorner")
     TabBtnCorner.CornerRadius = UDim.new(0, 6)
@@ -466,15 +340,15 @@ function QrinzUI:Tab(options)
     TabBtnStroke.Thickness = 1
     TabBtnStroke.Parent = TabButton
 
-    -- Membuat Halaman Tab di Container
+    -- Halaman Tab
     local TabPage = Instance.new("ScrollingFrame")
-    TabPage.Name = tabTitle .. "Page"
+    TabPage.Name = tabName.."_Page"
     TabPage.Size = UDim2.new(1, 0, 1, 0)
     TabPage.BackgroundTransparency = 1
     TabPage.ScrollBarThickness = 2
     TabPage.ScrollBarImageColor3 = Colors.Purple
     TabPage.CanvasSize = UDim2.new(0, 0, 0, 0)
-    TabPage.Visible = false -- Sembunyikan secara default
+    TabPage.Visible = false -- Default disembunyikan
     TabPage.Parent = self.Container
 
     local ListLayout = Instance.new("UIListLayout")
@@ -484,7 +358,7 @@ function QrinzUI:Tab(options)
 
     local UIPadding = Instance.new("UIPadding")
     UIPadding.PaddingTop = UDim.new(0, 2)
-    UIPadding.PaddingBottom = UDim.new(0, 10)
+    UIPadding.PaddingBottom = UDim.new(0, 5)
     UIPadding.PaddingLeft = UDim.new(0, 2)
     UIPadding.PaddingRight = UDim.new(0, 2)
     UIPadding.Parent = TabPage
@@ -493,37 +367,31 @@ function QrinzUI:Tab(options)
         TabPage.CanvasSize = UDim2.new(0, 0, 0, ListLayout.AbsoluteContentSize.Y + 15)
     end)
 
-    -- Simpan ke memori jendela UI
-    table.insert(self.Tabs, TabButton)
-    table.insert(self.TabPages, TabPage)
-
-    -- Logika Pergantian Tab
+    -- Logika Ganti Tab
     local function ActivateTab()
-        -- Reset semua tab
-        for _, btn in pairs(self.Tabs) do
-            TweenService:Create(btn, TweenInfo.new(0.2), {BackgroundColor3 = Colors.ElementBG, TextColor3 = Colors.TextMuted}):Play()
-            btn.UIStroke.Color = Colors.Stroke
+        for _, otherTab in ipairs(self.Tabs) do
+            otherTab.Page.Visible = false
+            TweenService:Create(otherTab.Button, TweenInfo.new(0.2), {BackgroundColor3 = Colors.ElementBG, TextColor3 = Colors.TextMuted}):Play()
+            otherTab.Stroke.Color = Colors.Stroke
         end
-        for _, page in pairs(self.TabPages) do
-            page.Visible = false
-        end
-        
-        -- Aktifkan tab ini
-        TweenService:Create(TabButton, TweenInfo.new(0.2), {BackgroundColor3 = Colors.Purple, TextColor3 = Colors.TextWhite}):Play()
-        TabBtnStroke.Color = Colors.StrokeActive
         TabPage.Visible = true
-    end
-
-    -- Jika ini tab pertama yang dibuat, aktifkan otomatis
-    if #self.Tabs == 1 then
-        ActivateTab()
+        TweenService:Create(TabButton, TweenInfo.new(0.2), {BackgroundColor3 = Colors.MainBG, TextColor3 = Colors.TextWhite}):Play()
+        TabBtnStroke.Color = Colors.StrokeActive
     end
 
     TabButton.MouseButton1Click:Connect(ActivateTab)
 
-    -- Memasukkan fungsionalitas UI Elements ke tab
-    local tab = {}
     tab.Page = TabPage
+    tab.Button = TabButton
+    tab.Stroke = TabBtnStroke
+    
+    table.insert(self.Tabs, tab)
+    
+    -- Auto buka tab pertama
+    if #self.Tabs == 1 then
+        ActivateTab()
+    end
+
     for k, v in pairs(QrinzUI.Elements) do
         tab[k] = v
     end
@@ -532,7 +400,9 @@ end
 
 QrinzUI.Elements = {}
 
--- UI ELEMENTS (Desain diperbarui dengan Edge Glowing / Stroke Gradient)
+-- =============================================================================
+-- BASE MENU ELEMENTS
+-- =============================================================================
 function QrinzUI.Elements:Toggle(options)
     local state = options.Value or false
     local callback = options.Callback or function() end
@@ -547,11 +417,9 @@ function QrinzUI.Elements:Toggle(options)
     Corner.Parent = ToggleFrame
     
     local Stroke = Instance.new("UIStroke")
-    Stroke.Thickness = 1.2
+    Stroke.Color = Colors.Stroke
+    Stroke.Thickness = 1
     Stroke.Parent = ToggleFrame
-    local StrokeGrad = Instance.new("UIGradient")
-    StrokeGrad.Color = BluePurpleGradient
-    StrokeGrad.Parent = Stroke
 
     local Title = Instance.new("TextLabel")
     Title.Size = UDim2.new(1, -50, 1, 0)
@@ -577,7 +445,7 @@ function QrinzUI.Elements:Toggle(options)
 
     local CheckBoxStroke = Instance.new("UIStroke")
     CheckBoxStroke.Color = Colors.Stroke
-    CheckBoxStroke.Thickness = 1
+    CheckBoxStroke.Thickness = 1.2
     CheckBoxStroke.Parent = Checkbox
 
     local Indicator = Instance.new("Frame")
@@ -598,6 +466,9 @@ function QrinzUI.Elements:Toggle(options)
     local function updateToggle()
         TweenService:Create(Indicator, TweenInfo.new(0.2, Enum.EasingStyle.Quart), {
             BackgroundTransparency = state and 0 or 1
+        }):Play()
+        TweenService:Create(CheckBoxStroke, TweenInfo.new(0.2), {
+            Color = state and Colors.StrokeActive or Colors.Stroke
         }):Play()
         callback(state)
     end
@@ -621,7 +492,7 @@ function QrinzUI.Elements:Button(options)
     local callback = options.Callback or function() end
 
     local ButtonFrame = Instance.new("TextButton")
-    ButtonFrame.Size = UDim2.new(1, 0, 0, 42)
+    ButtonFrame.Size = UDim2.new(1, 0, 0, 40)
     ButtonFrame.BackgroundColor3 = Colors.ElementBG
     ButtonFrame.Text = ""
     ButtonFrame.AutoButtonColor = false
@@ -632,11 +503,9 @@ function QrinzUI.Elements:Button(options)
     Corner.Parent = ButtonFrame
     
     local Stroke = Instance.new("UIStroke")
-    Stroke.Thickness = 1.2
+    Stroke.Color = Colors.Stroke
+    Stroke.Thickness = 1
     Stroke.Parent = ButtonFrame
-    local StrokeGrad = Instance.new("UIGradient")
-    StrokeGrad.Color = BluePurpleGradient
-    StrokeGrad.Parent = Stroke
 
     local Title = Instance.new("TextLabel")
     Title.Size = UDim2.new(1, -20, 1, 0)
@@ -645,22 +514,95 @@ function QrinzUI.Elements:Button(options)
     Title.Font = Enum.Font.GothamMedium
     Title.TextSize = 13
     Title.TextColor3 = Colors.TextWhite
-    Title.TextXAlignment = Enum.TextXAlignment.Left
+    Title.TextXAlignment = Enum.TextXAlignment.Center
     Title.BackgroundTransparency = 1
     Title.Parent = ButtonFrame
     
     ButtonFrame.MouseEnter:Connect(function()
-        TweenService:Create(ButtonFrame, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(35, 35, 50)}):Play()
+        TweenService:Create(ButtonFrame, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(36, 36, 50)}):Play()
+        TweenService:Create(Stroke, TweenInfo.new(0.2), {Color = Colors.StrokeActive}):Play()
     end)
     ButtonFrame.MouseLeave:Connect(function()
         TweenService:Create(ButtonFrame, TweenInfo.new(0.2), {BackgroundColor3 = Colors.ElementBG}):Play()
+        TweenService:Create(Stroke, TweenInfo.new(0.2), {Color = Colors.Stroke}):Play()
     end)
 
     ButtonFrame.MouseButton1Click:Connect(function()
         TweenService:Create(ButtonFrame, TweenInfo.new(0.1), {BackgroundColor3 = Colors.Purple}):Play()
         task.wait(0.1)
-        TweenService:Create(ButtonFrame, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(35, 35, 50)}):Play()
+        TweenService:Create(ButtonFrame, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(36, 36, 50)}):Play()
         callback()
+    end)
+end
+
+-- SISTEM TEXT INPUT BARU
+function QrinzUI.Elements:Input(options)
+    local callback = options.Callback or function() end
+    
+    local InputFrame = Instance.new("Frame")
+    InputFrame.Size = UDim2.new(1, 0, 0, 42)
+    InputFrame.BackgroundColor3 = Colors.ElementBG
+    InputFrame.Parent = self.Page
+
+    local Corner = Instance.new("UICorner")
+    Corner.CornerRadius = UDim.new(0, 8)
+    Corner.Parent = InputFrame
+    
+    local Stroke = Instance.new("UIStroke")
+    Stroke.Color = Colors.Stroke
+    Stroke.Thickness = 1
+    Stroke.Parent = InputFrame
+
+    local Title = Instance.new("TextLabel")
+    Title.Size = UDim2.new(0.4, 0, 1, 0)
+    Title.Position = UDim2.new(0, 12, 0, 0)
+    Title.Text = options.Title or "Input"
+    Title.Font = Enum.Font.GothamMedium
+    Title.TextSize = 13
+    Title.TextColor3 = Colors.TextWhite
+    Title.TextXAlignment = Enum.TextXAlignment.Left
+    Title.BackgroundTransparency = 1
+    Title.Parent = InputFrame
+
+    local TextBoxContainer = Instance.new("Frame")
+    TextBoxContainer.Size = UDim2.new(0.6, -20, 0, 28)
+    TextBoxContainer.Position = UDim2.new(0.4, 10, 0.5, -14)
+    TextBoxContainer.BackgroundColor3 = Colors.MainBG
+    TextBoxContainer.Parent = InputFrame
+    
+    local BoxCorner = Instance.new("UICorner")
+    BoxCorner.CornerRadius = UDim.new(0, 6)
+    BoxCorner.Parent = TextBoxContainer
+    
+    local BoxStroke = Instance.new("UIStroke")
+    BoxStroke.Color = Colors.Stroke
+    BoxStroke.Thickness = 1
+    BoxStroke.Parent = TextBoxContainer
+
+    local TextBox = Instance.new("TextBox")
+    TextBox.Size = UDim2.new(1, -16, 1, 0)
+    TextBox.Position = UDim2.new(0, 8, 0, 0)
+    TextBox.BackgroundTransparency = 1
+    TextBox.Text = ""
+    TextBox.PlaceholderText = options.Placeholder or "Type here..."
+    TextBox.PlaceholderColor3 = Colors.TextMuted
+    TextBox.Font = Enum.Font.Gotham
+    TextBox.TextSize = 12
+    TextBox.TextColor3 = Colors.TextWhite
+    TextBox.TextXAlignment = Enum.TextXAlignment.Left
+    TextBox.ClipsDescendants = true
+    TextBox.Parent = TextBoxContainer
+
+    -- Efek terang/glow saat input diklik
+    TextBox.Focused:Connect(function()
+        TweenService:Create(BoxStroke, TweenInfo.new(0.2), {Color = Colors.StrokeActive}):Play()
+        TweenService:Create(Stroke, TweenInfo.new(0.2), {Color = Colors.StrokeActive}):Play()
+    end)
+    
+    TextBox.FocusLost:Connect(function()
+        TweenService:Create(BoxStroke, TweenInfo.new(0.2), {Color = Colors.Stroke}):Play()
+        TweenService:Create(Stroke, TweenInfo.new(0.2), {Color = Colors.Stroke}):Play()
+        callback(TextBox.Text)
     end)
 end
 
@@ -679,11 +621,9 @@ function QrinzUI.Elements:Dropdown(options)
     Corner.Parent = DropdownFrame
     
     local Stroke = Instance.new("UIStroke")
-    Stroke.Thickness = 1.2
+    Stroke.Color = Colors.Stroke
+    Stroke.Thickness = 1
     Stroke.Parent = DropdownFrame
-    local StrokeGrad = Instance.new("UIGradient")
-    StrokeGrad.Color = BluePurpleGradient
-    StrokeGrad.Parent = Stroke
 
     local TriggerButton = Instance.new("TextButton")
     TriggerButton.Size = UDim2.new(1, 0, 0, 42)
@@ -706,7 +646,10 @@ function QrinzUI.Elements:Dropdown(options)
     TriggerButton.MouseButton1Click:Connect(function()
         isOpen = not isOpen
         TweenService:Create(DropdownFrame, TweenInfo.new(0.3, Enum.EasingStyle.Quart), {
-            Size = isOpen and UDim2.new(1, 0, 0, 42 + (#options.Values * 32) + 5) or UDim2.new(1, 0, 0, 42)
+            Size = isOpen and UDim2.new(1, 0, 0, 42 + (#options.Values * 32) + 6) or UDim2.new(1, 0, 0, 42)
+        }):Play()
+        TweenService:Create(Stroke, TweenInfo.new(0.2), {
+            Color = isOpen and Colors.StrokeActive or Colors.Stroke
         }):Play()
     end)
 
@@ -731,16 +674,19 @@ function QrinzUI.Elements:Dropdown(options)
         optStroke.Parent = OptionBtn
 
         OptionBtn.MouseEnter:Connect(function()
-            TweenService:Create(OptionBtn, TweenInfo.new(0.2), {TextColor3 = Colors.TextWhite, BackgroundColor3 = Color3.fromRGB(35, 35, 50)}):Play()
+            TweenService:Create(OptionBtn, TweenInfo.new(0.2), {TextColor3 = Colors.TextWhite, BackgroundColor3 = Color3.fromRGB(36, 36, 50)}):Play()
+            TweenService:Create(optStroke, TweenInfo.new(0.2), {Color = Colors.StrokeActive}):Play()
         end)
         OptionBtn.MouseLeave:Connect(function()
             TweenService:Create(OptionBtn, TweenInfo.new(0.2), {TextColor3 = Colors.TextMuted, BackgroundColor3 = Colors.MainBG}):Play()
+            TweenService:Create(optStroke, TweenInfo.new(0.2), {Color = Colors.Stroke}):Play()
         end)
 
         OptionBtn.MouseButton1Click:Connect(function()
             Title.Text = options.Title .. " : " .. val
             isOpen = false
             TweenService:Create(DropdownFrame, TweenInfo.new(0.3, Enum.EasingStyle.Quart), {Size = UDim2.new(1, 0, 0, 42)}):Play()
+            TweenService:Create(Stroke, TweenInfo.new(0.2), {Color = Colors.Stroke}):Play()
             callback({val})
         end)
     end
