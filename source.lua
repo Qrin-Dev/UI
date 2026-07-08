@@ -153,7 +153,7 @@ function QrinzUI:CreateWindow(options)
     FloatButton.Image = window.ToggleIcon
     FloatButton.ImageColor3 = Colors.TextWhite
     FloatButton.Parent = ScreenGui
-    FloatButton.Visible = not options.KeySystem -- Sembunyikan tombol float jika ada key system di awal
+    FloatButton.Visible = not options.KeySystem
 
     local FloatCorner = Instance.new("UICorner")
     FloatCorner.CornerRadius = UDim.new(0, 12)
@@ -187,19 +187,19 @@ function QrinzUI:CreateWindow(options)
     MakeDraggable(TopBar, MainFrame)
     MakeDraggable(FloatButton, FloatButton)
 
-    -- SIFAT & INTEGRASI KEY SYSTEM
+    -- =============================================================================
+    -- TAMPILAN PREMIUM KEY SYSTEM INTEGRATION
+    -- =============================================================================
     if options.KeySystem then
-        Container.Visible = false -- Sembunyikan isi menu utama terlebih dahulu
+        Container.Visible = false
         
         local KeyConfig = options.KeySystem
         local ApiData = KeyConfig.API
         local Service = QrinzUI.Services[ApiData.Type]
         
         if Service then
-            -- Inisialisasi API Handler dari Service eksternal
             local ApiHandler = Service.New(ApiData.ServiceId, ApiData.SuperId)
             
-            -- Frame Utama Key System
             local KeyFrame = Instance.new("Frame")
             KeyFrame.Name = "KeyFrame"
             KeyFrame.Size = UDim2.new(1, -20, 1, -65)
@@ -207,73 +207,97 @@ function QrinzUI:CreateWindow(options)
             KeyFrame.BackgroundTransparency = 1
             KeyFrame.Parent = MainFrame
             
-            -- Label Catatan / Informasi Key
+            -- Ikon Kunci Estetik di bagian Atas
+            local KeyIcon = Instance.new("ImageLabel")
+            KeyIcon.Name = "KeyIcon"
+            KeyIcon.Size = UDim2.new(0, 40, 0, 40)
+            KeyIcon.Position = UDim2.new(0.5, -20, 0, 15)
+            KeyIcon.BackgroundTransparency = 1
+            KeyIcon.Image = "rbxassetid://10734950309" -- Ikon Kunci modern bawaan roblox
+            KeyIcon.ImageColor3 = Colors.Blue
+            KeyIcon.Parent = KeyFrame
+            
+            local IconGradient = Instance.new("UIGradient")
+            IconGradient.Color = BluePurpleGradient
+            IconGradient.Parent = KeyIcon
+
+            -- Label Informasi / Deskripsi Kunci
             local NoteLabel = Instance.new("TextLabel")
-            NoteLabel.Size = UDim2.new(1, 0, 0, 60)
-            NoteLabel.Position = UDim2.new(0, 0, 0, 10)
-            NoteLabel.Text = KeyConfig.Note or "Please verify your key to continue."
-            NoteLabel.Font = Enum.Font.Gotham
-            NoteLabel.TextSize = 13
+            NoteLabel.Size = UDim2.new(1, -10, 0, 50)
+            NoteLabel.Position = UDim2.new(0, 5, 0, 65)
+            NoteLabel.Text = KeyConfig.Note or "This script is secured. Please verify your product key."
+            NoteLabel.Font = Enum.Font.GothamMedium
+            NoteLabel.TextSize = 12
             NoteLabel.TextColor3 = Colors.TextMuted
             NoteLabel.TextWrapped = true
             NoteLabel.BackgroundTransparency = 1
             NoteLabel.Parent = KeyFrame
             
-            -- Input Box (Untuk paste Key)
+            -- Input Box Container (Tempat ngetik/paste key)
             local InputFrame = Instance.new("Frame")
-            InputFrame.Size = UDim2.new(1, 0, 0, 42)
-            InputFrame.Position = UDim2.new(0, 0, 0, 85)
+            InputFrame.Size = UDim2.new(1, 0, 0, 46) -- Lebih tinggi agar mudah diklik di HP
+            InputFrame.Position = UDim2.new(0, 0, 0, 130)
             InputFrame.BackgroundColor3 = Colors.ElementBG
             InputFrame.Parent = KeyFrame
             
             local InputCorner = Instance.new("UICorner")
-            InputCorner.CornerRadius = UDim.new(0, 8)
+            InputCorner.CornerRadius = UDim.new(0, 10)
             InputCorner.Parent = InputFrame
             
             local InputStroke = Instance.new("UIStroke")
             InputStroke.Color = Colors.Stroke
-            InputStroke.Thickness = 1
+            InputStroke.Thickness = 1.5
             InputStroke.Parent = InputFrame
             
             local TextBox = Instance.new("TextBox")
-            TextBox.Size = UDim2.new(1, -20, 1, 0)
-            TextBox.Position = UDim2.new(0, 10, 0, 0)
+            TextBox.Size = UDim2.new(1, -24, 1, 0)
+            TextBox.Position = UDim2.new(0, 12, 0, 0)
             TextBox.BackgroundTransparency = 1
             TextBox.Text = ""
-            TextBox.PlaceholderText = "Enter key here..."
-            TextBox.PlaceholderColor3 = Colors.TextMuted
+            TextBox.PlaceholderText = "Paste or enter your key here..."
+            TextBox.PlaceholderColor3 = Color3.fromRGB(90, 95, 110)
             TextBox.Font = Enum.Font.GothamMedium
-            TextBox.TextSize = 14
+            TextBox.TextSize = 13
             TextBox.TextColor3 = Colors.TextWhite
             TextBox.TextXAlignment = Enum.TextXAlignment.Left
             TextBox.Parent = InputFrame
             
-            -- Container untuk 2 Tombol di bawah Input
+            -- Efek Glow Animasi saat Input Box aktif (Fokus)
+            TextBox.Focused:Connect(function()
+                TweenService:Create(InputStroke, TweenInfo.new(0.25, Enum.EasingStyle.Quad), {Color = Colors.Blue}):Play()
+                TweenService:Create(InputFrame, TweenInfo.new(0.25, Enum.EasingStyle.Quad), {BackgroundColor3 = Color3.fromRGB(24, 24, 35)}):Play()
+            end)
+            TextBox.FocusLost:Connect(function()
+                TweenService:Create(InputStroke, TweenInfo.new(0.25, Enum.EasingStyle.Quad), {Color = Colors.Stroke}):Play()
+                TweenService:Create(InputFrame, TweenInfo.new(0.25, Enum.EasingStyle.Quad), {BackgroundColor3 = Colors.ElementBG}):Play()
+            end)
+            
+            -- Container Tombol (Bawah Input)
             local ButtonContainer = Instance.new("Frame")
-            ButtonContainer.Size = UDim2.new(1, 0, 0, 40)
-            ButtonContainer.Position = UDim2.new(0, 0, 0, 142)
+            ButtonContainer.Size = UDim2.new(1, 0, 0, 45)
+            ButtonContainer.Position = UDim2.new(0, 0, 0, 192)
             ButtonContainer.BackgroundTransparency = 1
             ButtonContainer.Parent = KeyFrame
             
             local UIList = Instance.new("UIListLayout")
             UIList.FillDirection = Enum.FillDirection.Horizontal
-            UIList.Padding = UDim.new(0, 10)
+            UIList.Padding = UDim.new(0, 12)
             UIList.SortOrder = Enum.SortOrder.LayoutOrder
             UIList.Parent = ButtonContainer
             
-            -- Tombol 1: Copy Link
+            -- TOMBOL 1: COPY LINK (Glow Outline style)
             local CopyBtn = Instance.new("TextButton")
-            CopyBtn.Size = UDim2.new(0.5, -5, 1, 0)
+            CopyBtn.Size = UDim2.new(0.5, -6, 1, 0)
             CopyBtn.BackgroundColor3 = Colors.ElementBG
             CopyBtn.Text = "Copy Link"
             CopyBtn.Font = Enum.Font.GothamBold
             CopyBtn.TextSize = 13
-            CopyBtn.TextColor3 = Colors.TextWhite
+            CopyBtn.TextColor3 = Colors.TextMuted
             CopyBtn.AutoButtonColor = false
             CopyBtn.Parent = ButtonContainer
             
             local CopyCorner = Instance.new("UICorner")
-            CopyCorner.CornerRadius = UDim.new(0, 8)
+            CopyCorner.CornerRadius = UDim.new(0, 10)
             CopyCorner.Parent = CopyBtn
             
             local CopyStroke = Instance.new("UIStroke")
@@ -281,10 +305,10 @@ function QrinzUI:CreateWindow(options)
             CopyStroke.Thickness = 1
             CopyStroke.Parent = CopyBtn
             
-            -- Tombol 2: Verify Key
+            -- TOMBOL 2: VERIFY KEY (Premium Gradient style - Tombol Utama)
             local VerifyBtn = Instance.new("TextButton")
-            VerifyBtn.Size = UDim2.new(0.5, -5, 1, 0)
-            VerifyBtn.BackgroundColor3 = Colors.Purple
+            VerifyBtn.Size = UDim2.new(0.5, -6, 1, 0)
+            VerifyBtn.BackgroundColor3 = Colors.TextWhite -- Menggunakan putih dasar untuk diwarnai Gradasi
             VerifyBtn.Text = "Verify Key"
             VerifyBtn.Font = Enum.Font.GothamBold
             VerifyBtn.TextSize = 13
@@ -293,43 +317,69 @@ function QrinzUI:CreateWindow(options)
             VerifyBtn.Parent = ButtonContainer
             
             local VerifyCorner = Instance.new("UICorner")
-            VerifyCorner.CornerRadius = UDim.new(0, 8)
+            VerifyCorner.CornerRadius = UDim.new(0, 10)
             VerifyCorner.Parent = VerifyBtn
             
-            -- Efek Hover & Klik Tombol Copy
-            CopyBtn.MouseEnter:Connect(function() TweenService:Create(CopyBtn, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(30, 30, 42)}):Play() end)
-            CopyBtn.MouseLeave:Connect(function() TweenService:Create(CopyBtn, TweenInfo.new(0.2), {BackgroundColor3 = Colors.ElementBG}):Play() end)
+            local VerifyGradient = Instance.new("UIGradient")
+            VerifyGradient.Color = BluePurpleGradient
+            VerifyGradient.Parent = VerifyBtn
+            
+            -- Animasi Efek Hover & Klik Tombol Copy (Secondary)
+            CopyBtn.MouseEnter:Connect(function() 
+                TweenService:Create(CopyBtn, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(32, 32, 46), TextColor3 = Colors.TextWhite}):Play() 
+                TweenService:Create(CopyStroke, TweenInfo.new(0.2), {Color = Colors.Blue}):Play()
+            end)
+            CopyBtn.MouseLeave:Connect(function() 
+                TweenService:Create(CopyBtn, TweenInfo.new(0.2), {BackgroundColor3 = Colors.ElementBG, TextColor3 = Colors.TextMuted}):Play() 
+                TweenService:Create(CopyStroke, TweenInfo.new(0.2), {Color = Colors.Stroke}):Play()
+            end)
             CopyBtn.MouseButton1Click:Connect(function()
                 ApiHandler.Copy()
                 CopyBtn.Text = "Link Copied!"
+                TweenService:Create(CopyStroke, TweenInfo.new(0.1), {Color = Colors.Green}):Play()
                 task.wait(1.5)
                 CopyBtn.Text = "Copy Link"
+                TweenService:Create(CopyStroke, TweenInfo.new(0.2), {Color = Colors.Stroke}):Play()
             end)
             
-            -- Efek Hover & Klik Tombol Verify
-            VerifyBtn.MouseEnter:Connect(function() TweenService:Create(VerifyBtn, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(160, 80, 255)}):Play() end)
-            VerifyBtn.MouseLeave:Connect(function() TweenService:Create(VerifyBtn, TweenInfo.new(0.2), {BackgroundColor3 = Colors.Purple}):Play() end)
+            -- Animasi Efek Hover & Klik Tombol Verify (Primary Gradient)
+            VerifyBtn.MouseEnter:Connect(function() 
+                TweenService:Create(VerifyBtn, TweenInfo.new(0.2), {Size = UDim2.new(0.5, -2, 1, 2), Position = UDim2.new(0, -2, 0, -1)}):Play()
+            end)
+            VerifyBtn.MouseLeave:Connect(function() 
+                TweenService:Create(VerifyBtn, TweenInfo.new(0.2), {Size = UDim2.new(0.5, -6, 1, 0), Position = UDim2.new(0, 0, 0, 0)}):Play()
+            end)
             VerifyBtn.MouseButton1Click:Connect(function()
                 VerifyBtn.Text = "Checking..."
                 local success, msg = ApiHandler.Verify(TextBox.Text)
                 
                 if success then
                     VerifyBtn.Text = "Access Granted!"
-                    TweenService:Create(InputStroke, TweenInfo.new(0.3), {Color = Colors.Green}):Play()
+                    VerifyGradient.Color = ColorSequence.new(Colors.Green)
+                    TweenService:Create(InputStroke, TweenInfo.new(0.25), {Color = Colors.Green}):Play()
                     task.wait(1)
                     
-                    -- Hilangkan Key System & Munculkan Main Menu
-                    KeyFrame:Destroy()
-                    FloatButton.Visible = true
-                    Container.Visible = true
+                    -- Transisi Halus Membuka Menu Utama
+                    local fadeTween = TweenService:Create(KeyFrame, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Position = UDim2.new(0, 10, 0, -300)})
+                    fadeTween:Play()
+                    fadeTween.Completed:Connect(function()
+                        KeyFrame:Destroy()
+                        FloatButton.Visible = true
+                        Container.Visible = true
+                    end)
                 else
                     VerifyBtn.Text = "Invalid Key!"
-                    TweenService:Create(InputStroke, TweenInfo.new(0.3), {Color = Colors.Red}):Play()
-                    NoteLabel.Text = msg or "Key validation failed."
+                    VerifyGradient.Color = ColorSequence.new(Colors.Red)
+                    TweenService:Create(InputStroke, TweenInfo.new(0.25), {Color = Colors.Red}):Play()
+                    NoteLabel.Text = msg or "The key is incorrect or expired."
                     NoteLabel.TextColor3 = Colors.Red
+                    
                     task.wait(2)
                     VerifyBtn.Text = "Verify Key"
-                    TweenService:Create(InputStroke, TweenInfo.new(0.3), {Color = Colors.Stroke}):Play()
+                    VerifyGradient.Color = BluePurpleGradient
+                    NoteLabel.Text = KeyConfig.Note or "This script is secured. Please verify your product key."
+                    NoteLabel.TextColor3 = Colors.TextMuted
+                    TweenService:Create(InputStroke, TweenInfo.new(0.25), {Color = Colors.Stroke}):Play()
                 end
             end)
         end
