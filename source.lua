@@ -1,5 +1,6 @@
 -- =============================================================================
 -- QRINZ UI LIBRARY BASE CODE (MODERN BLUE & PURPLE THEME)
+-- WITH RESPONSIVE TAB NAVIGATION
 -- =============================================================================
 
 local QrinzUI = {}
@@ -91,7 +92,7 @@ function QrinzUI:Notification(options)
     local duration = options.Duration or 3
 
     local NotifyFrame = Instance.new("Frame")
-    NotifyFrame.Size = UDim2.new(1, 0, 0, 0) -- Mulai dari tinggi 0 untuk animasi pop-in
+    NotifyFrame.Size = UDim2.new(1, 0, 0, 0)
     NotifyFrame.BackgroundColor3 = Colors.ElementBG
     NotifyFrame.ClipsDescendants = true
     NotifyFrame.Parent = NotifyContainer
@@ -138,12 +139,10 @@ function QrinzUI:Notification(options)
     ContentLabel.BackgroundTransparency = 1
     ContentLabel.Parent = NotifyFrame
 
-    -- Animasi Muncul (Slide & Resize)
     TweenService:Create(NotifyFrame, TweenInfo.new(0.3, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {
         Size = UDim2.new(1, 0, 0, 68)
     }):Play()
 
-    -- Auto Dismiss
     task.delay(duration, function()
         local closeTween = TweenService:Create(NotifyFrame, TweenInfo.new(0.3, Enum.EasingStyle.Quart, Enum.EasingDirection.In), {
             Size = UDim2.new(1, 0, 0, 0),
@@ -166,6 +165,8 @@ function QrinzUI:CreateWindow(options)
     window.Author = options.Author or ""
     window.Visible = true
     window.ToggleIcon = options.ToggleIcon or "rbxassetid://10734896206"
+    window.Tabs = {} -- Menyimpan daftar semua Tab
+    window.CurrentTab = nil -- Menyimpan Tab yang sedang aktif
 
     local ScreenGui = Instance.new("ScreenGui")
     ScreenGui.Name = "QrinzUIHub"
@@ -176,8 +177,8 @@ function QrinzUI:CreateWindow(options)
 
     local MainFrame = Instance.new("Frame")
     MainFrame.Name = "MainFrame"
-    MainFrame.Size = UDim2.new(0, 340, 0, 400)
-    MainFrame.Position = UDim2.new(0.5, -170, 0.5, -200)
+    MainFrame.Size = UDim2.new(0, 340, 0, 420) -- Sedikit lebih tinggi untuk memberi ruang Navigasi
+    MainFrame.Position = UDim2.new(0.5, -170, 0.5, -210)
     MainFrame.BackgroundColor3 = Colors.MainBG
     MainFrame.BorderSizePixel = 0
     MainFrame.ClipsDescendants = true
@@ -196,6 +197,7 @@ function QrinzUI:CreateWindow(options)
     StrokeGradient.Color = BluePurpleGradient
     StrokeGradient.Parent = MainStroke
 
+    -- TOP BAR
     local TopBar = Instance.new("Frame")
     TopBar.Name = "TopBar"
     TopBar.Size = UDim2.new(1, 0, 0, 50)
@@ -234,15 +236,40 @@ function QrinzUI:CreateWindow(options)
     Divider.BorderSizePixel = 0
     Divider.Parent = TopBar
 
+    -- TAB CONTAINER (Bagian Navigasi)
+    local TabContainer = Instance.new("ScrollingFrame")
+    TabContainer.Name = "TabContainer"
+    TabContainer.Size = UDim2.new(1, -20, 0, 35)
+    TabContainer.Position = UDim2.new(0, 10, 0, 55)
+    TabContainer.BackgroundTransparency = 1
+    TabContainer.ScrollBarThickness = 0 -- Scrollbar disembunyikan agar bersih
+    TabContainer.ScrollingDirection = Enum.ScrollingDirection.X
+    TabContainer.CanvasSize = UDim2.new(0, 0, 0, 0)
+    TabContainer.Parent = MainFrame
+    window.TabContainer = TabContainer
+
+    local TabListLayout = Instance.new("UIListLayout")
+    TabListLayout.FillDirection = Enum.FillDirection.Horizontal
+    TabListLayout.SortOrder = Enum.SortOrder.LayoutOrder
+    TabListLayout.Padding = UDim.new(0, 8)
+    TabListLayout.VerticalAlignment = Enum.VerticalAlignment.Center
+    TabListLayout.Parent = TabContainer
+
+    TabListLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+        TabContainer.CanvasSize = UDim2.new(0, TabListLayout.AbsoluteContentSize.X, 0, 0)
+    end)
+
+    -- PAGE CONTAINER (Wadah isi dari Tab)
     local Container = Instance.new("Frame")
     Container.Name = "Container"
-    Container.Size = UDim2.new(1, -20, 1, -65)
-    Container.Position = UDim2.new(0, 10, 0, 55)
+    Container.Size = UDim2.new(1, -20, 1, -100) -- Disesuaikan agar muat TabContainer
+    Container.Position = UDim2.new(0, 10, 0, 95)
     Container.BackgroundTransparency = 1
     Container.ClipsDescendants = true
     Container.Parent = MainFrame
     window.Container = Container
 
+    -- FLOATING BUTTON (Buka/Tutup Menu)
     local FloatButton = Instance.new("ImageButton")
     FloatButton.Name = "FloatToggleButton"
     FloatButton.Size = UDim2.new(0, 48, 0, 48)
@@ -269,7 +296,7 @@ function QrinzUI:CreateWindow(options)
         if window.Visible then
             MainFrame.Visible = true
             TweenService:Create(MainFrame, TweenInfo.new(0.3, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
-                Size = UDim2.new(0, 340, 0, 400)
+                Size = UDim2.new(0, 340, 0, 420)
             }):Play()
         else
             local closeTween = TweenService:Create(MainFrame, TweenInfo.new(0.25, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {
@@ -285,9 +312,10 @@ function QrinzUI:CreateWindow(options)
     MakeDraggable(TopBar, MainFrame)
     MakeDraggable(FloatButton, FloatButton)
 
-    -- INTEGRASI KEY SYSTEM TERBARU (DIOPTIMALKAN)
+    -- INTEGRASI KEY SYSTEM 
     if options.KeySystem then
         Container.Visible = false
+        TabContainer.Visible = false -- Sembunyikan navigasi tab selama verify
         
         local KeyConfig = options.KeySystem
         local ApiData = KeyConfig.API[1]
@@ -306,7 +334,7 @@ function QrinzUI:CreateWindow(options)
             local NoteLabel = Instance.new("TextLabel")
             NoteLabel.Size = UDim2.new(1, -10, 0, 70)
             NoteLabel.Position = UDim2.new(0, 5, 0, 10)
-            NoteLabel.Text = KeyConfig.Note or "Please get and verify your secure key to access the hub features."
+            NoteLabel.Text = KeyConfig.Note or "Please verify your key to access features."
             NoteLabel.Font = Enum.Font.GothamMedium
             NoteLabel.TextSize = 13
             NoteLabel.TextColor3 = Colors.TextMuted
@@ -315,7 +343,6 @@ function QrinzUI:CreateWindow(options)
             NoteLabel.BackgroundTransparency = 1
             NoteLabel.Parent = KeyFrame
             
-            -- Input Box Container
             local InputFrame = Instance.new("Frame")
             InputFrame.Size = UDim2.new(1, -10, 0, 46)
             InputFrame.Position = UDim2.new(0, 5, 0, 95)
@@ -336,7 +363,7 @@ function QrinzUI:CreateWindow(options)
             TextBox.Position = UDim2.new(0, 12, 0, 0)
             TextBox.BackgroundTransparency = 1
             TextBox.Text = ""
-            TextBox.PlaceholderText = "Paste or enter secret key here..."
+            TextBox.PlaceholderText = "Paste key here..."
             TextBox.PlaceholderColor3 = Colors.TextMuted
             TextBox.Font = Enum.Font.GothamMedium
             TextBox.TextSize = 14
@@ -344,7 +371,6 @@ function QrinzUI:CreateWindow(options)
             TextBox.TextXAlignment = Enum.TextXAlignment.Left
             TextBox.Parent = InputFrame
             
-            -- Efek Glow/Focus saat input diklik
             TextBox.Focused:Connect(function()
                 TweenService:Create(InputStroke, TweenInfo.new(0.25), {Color = Colors.StrokeActive}):Play()
             end)
@@ -352,7 +378,6 @@ function QrinzUI:CreateWindow(options)
                 TweenService:Create(InputStroke, TweenInfo.new(0.25), {Color = Colors.Stroke}):Play()
             end)
             
-            -- Tombol Aksi Kontainer
             local ButtonContainer = Instance.new("Frame")
             ButtonContainer.Size = UDim2.new(1, -10, 0, 44)
             ButtonContainer.Position = UDim2.new(0, 5, 0, 155)
@@ -365,7 +390,6 @@ function QrinzUI:CreateWindow(options)
             UIList.SortOrder = Enum.SortOrder.LayoutOrder
             UIList.Parent = ButtonContainer
             
-            -- Tombol 1: Copy Link
             local CopyBtn = Instance.new("TextButton")
             CopyBtn.Size = UDim2.new(0.5, -6, 1, 0)
             CopyBtn.BackgroundColor3 = Colors.ElementBG
@@ -385,7 +409,6 @@ function QrinzUI:CreateWindow(options)
             CopyStroke.Thickness = 1
             CopyStroke.Parent = CopyBtn
             
-            -- Tombol 2: Verify
             local VerifyBtn = Instance.new("TextButton")
             VerifyBtn.Size = UDim2.new(0.5, -6, 1, 0)
             VerifyBtn.BackgroundColor3 = Colors.Purple
@@ -400,28 +423,11 @@ function QrinzUI:CreateWindow(options)
             VerifyCorner.CornerRadius = UDim.new(0, 10)
             VerifyCorner.Parent = VerifyBtn
             
-            -- Animasi Lembut Saat Hover/Klik (Copy Button)
-            CopyBtn.MouseEnter:Connect(function() 
-                TweenService:Create(CopyBtn, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(28, 28, 38)}):Play() 
-            end)
-            CopyBtn.MouseLeave:Connect(function() 
-                TweenService:Create(CopyBtn, TweenInfo.new(0.2), {BackgroundColor3 = Colors.ElementBG}):Play() 
-            end)
             CopyBtn.MouseButton1Click:Connect(function()
                 ApiHandler.Copy()
-                self:Notification({Title = "Key System", Content = "Key link successfully copied to clipboard!", Duration = 3})
-                CopyBtn.Text = "Link Copied!"
-                task.wait(1.5)
-                CopyBtn.Text = "Copy Link"
+                self:Notification({Title = "Key System", Content = "Link copied to clipboard!", Duration = 3})
             end)
             
-            -- Animasi Lembut Saat Hover/Klik (Verify Button)
-            VerifyBtn.MouseEnter:Connect(function() 
-                TweenService:Create(VerifyBtn, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(155, 75, 255)}):Play() 
-            end)
-            VerifyBtn.MouseLeave:Connect(function() 
-                TweenService:Create(VerifyBtn, TweenInfo.new(0.2), {BackgroundColor3 = Colors.Purple}):Play() 
-            end)
             VerifyBtn.MouseButton1Click:Connect(function()
                 VerifyBtn.Text = "Checking..."
                 local success, msg = ApiHandler.Verify(TextBox.Text)
@@ -429,16 +435,17 @@ function QrinzUI:CreateWindow(options)
                 if success then
                     VerifyBtn.Text = "Granted!"
                     TweenService:Create(InputStroke, TweenInfo.new(0.2), {Color = Colors.Green}):Play()
-                    self:Notification({Title = "Key System", Content = "Access authorized! Welcome back.", Duration = 4})
+                    self:Notification({Title = "Key System", Content = "Access authorized!", Duration = 3})
                     task.wait(0.8)
                     
                     KeyFrame:Destroy()
                     FloatButton.Visible = true
                     Container.Visible = true
+                    TabContainer.Visible = true -- Munculkan tab saat sukses
                 else
                     VerifyBtn.Text = "Failed"
                     TweenService:Create(InputStroke, TweenInfo.new(0.2), {Color = Colors.Red}):Play()
-                    self:Notification({Title = "Verification Error", Content = msg or "The key is invalid.", Duration = 4})
+                    self:Notification({Title = "Error", Content = msg, Duration = 4})
                     task.wait(1.5)
                     VerifyBtn.Text = "Verify Access"
                     TweenService:Create(InputStroke, TweenInfo.new(0.2), {Color = Colors.Stroke}):Play()
@@ -453,15 +460,53 @@ end
 -- =============================================================================
 -- BASE MENU ELEMENTS (TABS, DROPDOWNS, ETC)
 -- =============================================================================
+
 function QrinzUI:Tab(options)
     local tab = {}
+    local tabTitle = options.Title or "Tab"
+    
+    -- Membuat Tombol Navigasi Tab
+    local TabButton = Instance.new("TextButton")
+    TabButton.Name = tabTitle .. "Btn"
+    TabButton.Size = UDim2.new(0, 0, 1, -4)
+    TabButton.AutomaticSize = Enum.AutomaticSize.X -- Lebar akan menyesuaikan panjang teks
+    TabButton.BackgroundColor3 = Colors.ElementBG
+    TabButton.Text = tabTitle
+    TabButton.Font = Enum.Font.GothamBold
+    TabButton.TextSize = 12
+    TabButton.TextColor3 = Colors.TextMuted
+    TabButton.AutoButtonColor = false
+    TabButton.Parent = self.TabContainer
+    
+    local TabPadding = Instance.new("UIPadding")
+    TabPadding.PaddingLeft = UDim.new(0, 14)
+    TabPadding.PaddingRight = UDim.new(0, 14)
+    TabPadding.Parent = TabButton
+    
+    local TabBtnCorner = Instance.new("UICorner")
+    TabBtnCorner.CornerRadius = UDim.new(0, 6)
+    TabBtnCorner.Parent = TabButton
+    
+    local TabBtnStroke = Instance.new("UIStroke")
+    TabBtnStroke.Color = Colors.Stroke
+    TabBtnStroke.Thickness = 1
+    TabBtnStroke.Parent = TabButton
+    
+    -- Gradient disiapkan untuk efek ketika Tab Aktif
+    local TabGradient = Instance.new("UIGradient")
+    TabGradient.Color = BluePurpleGradient
+    TabGradient.Parent = TabBtnStroke
+    TabGradient.Enabled = false -- Dimatikan di awal
+
+    -- Membuat Halaman (Page) untuk menampung elemen
     local TabPage = Instance.new("ScrollingFrame")
-    TabPage.Name = options.Title .. "Tab"
+    TabPage.Name = tabTitle .. "Page"
     TabPage.Size = UDim2.new(1, 0, 1, 0)
     TabPage.BackgroundTransparency = 1
-    TabPage.ScrollBarThickness = 3
+    TabPage.ScrollBarThickness = 2
     TabPage.ScrollBarImageColor3 = Colors.Purple
     TabPage.CanvasSize = UDim2.new(0, 0, 0, 0)
+    TabPage.Visible = false -- Disembunyikan secara default
     TabPage.Parent = self.Container
 
     local ListLayout = Instance.new("UIListLayout")
@@ -480,6 +525,39 @@ function QrinzUI:Tab(options)
         TabPage.CanvasSize = UDim2.new(0, 0, 0, ListLayout.AbsoluteContentSize.Y + 20)
     end)
 
+    -- Logika Navigasi Tab
+    local function ActivateTab()
+        -- 1. Matikan semua Tab terlebih dahulu
+        for _, t in ipairs(self.Tabs) do
+            t.Page.Visible = false
+            t.Button.TextColor3 = Colors.TextMuted
+            t.Gradient.Enabled = false
+            t.Stroke.Color = Colors.Stroke
+        end
+        -- 2. Hidupkan Tab yang diklik
+        TabPage.Visible = true
+        TabButton.TextColor3 = Colors.TextWhite
+        TabBtnStroke.Color = Color3.fromRGB(255, 255, 255) -- Warna pancingan untuk gradient
+        TabGradient.Enabled = true
+        self.CurrentTab = tab
+    end
+
+    TabButton.MouseButton1Click:Connect(ActivateTab)
+
+    -- Simpan data tab ke dalam memori Window
+    table.insert(self.Tabs, {
+        Button = TabButton,
+        Page = TabPage,
+        Stroke = TabBtnStroke,
+        Gradient = TabGradient
+    })
+
+    -- Jika ini adalah Tab pertama yang dibuat, otomatis aktifkan
+    if #self.Tabs == 1 then
+        ActivateTab()
+    end
+
+    -- Turunkan fungsi Elements ke Tab ini
     tab.Page = TabPage
     for k, v in pairs(QrinzUI.Elements) do
         tab[k] = v
@@ -512,7 +590,7 @@ function QrinzUI.Elements:Toggle(options)
     Title.Position = UDim2.new(0, 12, 0, 0)
     Title.Text = options.Title
     Title.Font = Enum.Font.GothamMedium
-    Title.TextSize = 14
+    Title.TextSize = 13
     Title.TextColor3 = Colors.TextWhite
     Title.TextXAlignment = Enum.TextXAlignment.Left
     Title.BackgroundTransparency = 1
@@ -595,7 +673,7 @@ function QrinzUI.Elements:Button(options)
     Title.Position = UDim2.new(0, 12, 0, 0)
     Title.Text = options.Title
     Title.Font = Enum.Font.GothamMedium
-    Title.TextSize = 14
+    Title.TextSize = 13
     Title.TextColor3 = Colors.TextWhite
     Title.TextXAlignment = Enum.TextXAlignment.Left
     Title.BackgroundTransparency = 1
@@ -646,7 +724,7 @@ function QrinzUI.Elements:Dropdown(options)
     Title.Position = UDim2.new(0, 12, 0, 0)
     Title.Text = options.Title .. " : " .. tostring(selectedValues[1] or "None")
     Title.Font = Enum.Font.GothamMedium
-    Title.TextSize = 14
+    Title.TextSize = 13
     Title.TextColor3 = Colors.TextWhite
     Title.TextXAlignment = Enum.TextXAlignment.Left
     Title.BackgroundTransparency = 1
@@ -667,7 +745,7 @@ function QrinzUI.Elements:Dropdown(options)
         OptionBtn.BackgroundColor3 = Colors.MainBG
         OptionBtn.Text = val
         OptionBtn.Font = Enum.Font.Gotham
-        OptionBtn.TextSize = 13
+        OptionBtn.TextSize = 12
         OptionBtn.TextColor3 = Colors.TextMuted
         OptionBtn.Parent = DropdownFrame
         
