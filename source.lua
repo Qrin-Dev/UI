@@ -87,7 +87,6 @@ function QrinzUI:MakeWindow(options)
     ScreenGui.Name = "QrinzUI_Window"
     ScreenGui.ResetOnSpawn = false
     ScreenGui.Parent = targetParent
-    self.ScreenGui = ScreenGui -- Disimpan agar fungsi destruksi luar tidak error
     
     local MainFrame = Instance.new("Frame")
     MainFrame.Name = "MainFrame"
@@ -117,7 +116,7 @@ function QrinzUI:MakeWindow(options)
     Title.Name = "Title"
     Title.Size = UDim2.new(1, -30, 1, 0)
     Title.Position = UDim2.new(0, 15, 0, 0)
-    Title.Text = options.Title or options.Name or "Qrinz Hub"
+    Title.Text = options.Title or options.Name or "Qrinz Hub" -- PERBAIKAN: Support "Title" atau "Name"
     Title.Font = Enum.Font.GothamBold
     Title.TextSize = 14
     Title.TextColor3 = Colors.TextWhite
@@ -221,148 +220,181 @@ function QrinzUI:MakeWindow(options)
         if Service then
             local ApiHandler = Service.New(ApiData.ServiceId, ApiData.SuperId)
             
-            local KeyFrame = Instance.new("Frame")
-            KeyFrame.Name = "KeyFrame"
-            KeyFrame.Size = UDim2.new(1, -20, 1, -65)
-            KeyFrame.Position = UDim2.new(0, 10, 0, 55)
-            KeyFrame.BackgroundTransparency = 1
-            KeyFrame.Parent = MainFrame
-            
-            local NoteLabel = Instance.new("TextLabel")
-            NoteLabel.Size = UDim2.new(1, -10, 0, 70)
-            NoteLabel.Position = UDim2.new(0, 5, 0, 10)
-            NoteLabel.Text = KeyConfig.Note or "Please get and verify your secure key to access the hub features."
-            NoteLabel.Font = Enum.Font.GothamMedium
-            NoteLabel.TextSize = 13
-            NoteLabel.TextColor3 = Colors.TextMuted
-            NoteLabel.TextWrapped = true
-            NoteLabel.TextYAlignment = Enum.TextYAlignment.Center
-            NoteLabel.BackgroundTransparency = 1
-            NoteLabel.Parent = KeyFrame
-            
-            local InputFrame = Instance.new("Frame")
-            InputFrame.Size = UDim2.new(1, -10, 0, 46)
-            InputFrame.Position = UDim2.new(0, 5, 0, 95)
-            InputFrame.BackgroundColor3 = Colors.ElementBG
-            InputFrame.Parent = KeyFrame
-            
-            local InputCorner = Instance.new("UICorner")
-            InputCorner.CornerRadius = UDim.new(0, 10)
-            InputCorner.Parent = InputFrame
-            
-            local InputStroke = Instance.new("UIStroke")
-            InputStroke.Color = Colors.Stroke
-            InputStroke.Thickness = 1.2
-            InputStroke.Parent = InputFrame
-            
-            local TextBox = Instance.new("TextBox")
-            TextBox.Size = UDim2.new(1, -24, 1, 0)
-            TextBox.Position = UDim2.new(0, 12, 0, 0)
-            TextBox.BackgroundTransparency = 1
-            TextBox.Text = ""
-            TextBox.PlaceholderText = "Enter key here..."
-            TextBox.PlaceholderColor3 = Colors.TextMuted
-            TextBox.Font = Enum.Font.GothamMedium
-            TextBox.TextSize = 14
-            TextBox.TextColor3 = Colors.TextWhite
-            TextBox.TextXAlignment = Enum.TextXAlignment.Left
-            TextBox.Parent = InputFrame
-            
-            TextBox.Focused:Connect(function()
-                TweenService:Create(InputStroke, TweenInfo.new(0.25), {Color = Colors.StrokeActive}):Play()
-            end)
-            TextBox.FocusLost:Connect(function()
-                TweenService:Create(InputStroke, TweenInfo.new(0.25), {Color = Colors.Stroke}):Play()
-            end)
-            
-            local ButtonContainer = Instance.new("Frame")
-            ButtonContainer.Size = UDim2.new(1, -10, 0, 44)
-            ButtonContainer.Position = UDim2.new(0, 5, 0, 155)
-            ButtonContainer.BackgroundTransparency = 1
-            ButtonContainer.Parent = KeyFrame
-            
-            local UIList = Instance.new("UIListLayout")
-            UIList.FillDirection = Enum.FillDirection.Horizontal
-            UIList.Padding = UDim.new(0, 12)
-            UIList.SortOrder = Enum.SortOrder.LayoutOrder
-            UIList.Parent = ButtonContainer
-            
-            local CopyBtn = Instance.new("TextButton")
-            CopyBtn.Size = UDim2.new(0.5, -6, 1, 0)
-            CopyBtn.BackgroundColor3 = Colors.ElementBG
-            CopyBtn.Text = "Copy Link"
-            CopyBtn.Font = Enum.Font.GothamBold
-            CopyBtn.TextSize = 13
-            CopyBtn.TextColor3 = Colors.TextWhite
-            CopyBtn.AutoButtonColor = false
-            CopyBtn.Parent = ButtonContainer
-            
-            local CopyCorner = Instance.new("UICorner")
-            CopyCorner.CornerRadius = UDim.new(0, 10)
-            CopyCorner.Parent = CopyBtn
-            
-            local CopyStroke = Instance.new("UIStroke")
-            CopyStroke.Color = Colors.Stroke
-            CopyStroke.Thickness = 1
-            CopyStroke.Parent = CopyBtn
-            
-            local VerifyBtn = Instance.new("TextButton")
-            VerifyBtn.Size = UDim2.new(0.5, -6, 1, 0)
-            VerifyBtn.BackgroundColor3 = Colors.Purple
-            VerifyBtn.Text = "Verify"
-            VerifyBtn.Font = Enum.Font.GothamBold
-            VerifyBtn.TextSize = 13
-            VerifyBtn.TextColor3 = Colors.TextWhite
-            VerifyBtn.AutoButtonColor = false
-            VerifyBtn.Parent = ButtonContainer
-            
-            local VerifyCorner = Instance.new("UICorner")
-            VerifyCorner.CornerRadius = UDim.new(0, 10)
-            VerifyCorner.Parent = VerifyBtn
-            
-            CopyBtn.MouseEnter:Connect(function() TweenService:Create(CopyBtn, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(35, 35, 50)}):Play() end)
-            CopyBtn.MouseLeave:Connect(function() TweenService:Create(CopyBtn, TweenInfo.new(0.2), {BackgroundColor3 = Colors.ElementBG}):Play() end)
-            CopyBtn.MouseButton1Click:Connect(function()
-                ApiHandler.Copy()
-                self:Notification({Title = "Key System", Content = "Link disalin!", Duration = 3})
-                CopyBtn.Text = "Copied!"
-                task.wait(1.5)
-                CopyBtn.Text = "Copy Link"
-            end)
-            
-            VerifyBtn.MouseEnter:Connect(function() TweenService:Create(VerifyBtn, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(155, 75, 255)}):Play() end)
-            VerifyBtn.MouseLeave:Connect(function() TweenService:Create(VerifyBtn, TweenInfo.new(0.2), {BackgroundColor3 = Colors.Purple}):Play() end)
-            VerifyBtn.MouseButton1Click:Connect(function()
-                VerifyBtn.Text = "..."
-                local successKey, msg = ApiHandler.Verify(TextBox.Text)
-                
-                if successKey then
-                    VerifyBtn.Text = "Granted!"
-                    TweenService:Create(InputStroke, TweenInfo.new(0.2), {Color = Colors.Green}):Play()
-                    self:Notification({Title = "Key System", Content = "Akses diterima!", Duration = 4})
-                    task.wait(0.8)
-                    
-                    KeyFrame:Destroy()
-                    FloatButton.Visible = true
-                    Container.Visible = true
-                    TabBar.Visible = true
-                else
-                    VerifyBtn.Text = "Failed"
-                    TweenService:Create(InputStroke, TweenInfo.new(0.2), {Color = Colors.Red}):Play()
-                    self:Notification({Title = "Error", Content = msg or "Key salah.", Duration = 4})
-                    task.wait(1.5)
-                    VerifyBtn.Text = "Verify"
-                    TweenService:Create(InputStroke, TweenInfo.new(0.2), {Color = Colors.Stroke}):Play()
+            -- =================================================================
+            -- SISTEM OTOMATIS CEK & VERIFIKASI KEY YANG TERSIMPAN
+            -- =================================================================
+            local keyFileName = "Zyqrin_SavedKey.txt"
+            local hasSavedValidKey = false
+            local savedKeyData = ""
+
+            if isfile and readfile and isfile(keyFileName) then
+                savedKeyData = readfile(keyFileName)
+                if savedKeyData and savedKeyData ~= "" then
+                    -- Lakukan pengecekan ke server secara background
+                    local successKey, msg = ApiHandler.Verify(savedKeyData)
+                    if successKey then
+                        hasSavedValidKey = true
+                        FloatButton.Visible = true
+                        Container.Visible = true
+                        TabBar.Visible = true
+                        self:Notification({Title = "Key System", Content = "Key aktif ditemukan! Masuk otomatis.", Duration = 4})
+                    end
                 end
-            end)
+            end
+
+            -- Jika key tidak ada atau sudah expired, munculkan GUI Key Input
+            if not hasSavedValidKey then
+                local KeyFrame = Instance.new("Frame")
+                KeyFrame.Name = "KeyFrame"
+                KeyFrame.Size = UDim2.new(1, -20, 1, -65)
+                KeyFrame.Position = UDim2.new(0, 10, 0, 55)
+                KeyFrame.BackgroundTransparency = 1
+                KeyFrame.Parent = MainFrame
+                
+                local NoteLabel = Instance.new("TextLabel")
+                NoteLabel.Size = UDim2.new(1, -10, 0, 70)
+                NoteLabel.Position = UDim2.new(0, 5, 0, 10)
+                NoteLabel.Text = KeyConfig.Note or "Please get and verify your secure key to access the hub features."
+                NoteLabel.Font = Enum.Font.GothamMedium
+                NoteLabel.TextSize = 13
+                NoteLabel.TextColor3 = Colors.TextMuted
+                NoteLabel.TextWrapped = true
+                NoteLabel.TextYAlignment = Enum.TextYAlignment.Center
+                NoteLabel.BackgroundTransparency = 1
+                NoteLabel.Parent = KeyFrame
+                
+                local InputFrame = Instance.new("Frame")
+                InputFrame.Size = UDim2.new(1, -10, 0, 46)
+                InputFrame.Position = UDim2.new(0, 5, 0, 95)
+                InputFrame.BackgroundColor3 = Colors.ElementBG
+                InputFrame.Parent = KeyFrame
+                
+                local InputCorner = Instance.new("UICorner")
+                InputCorner.CornerRadius = UDim.new(0, 10)
+                InputCorner.Parent = InputFrame
+                
+                local InputStroke = Instance.new("UIStroke")
+                InputStroke.Color = Colors.Stroke
+                InputStroke.Thickness = 1.2
+                InputStroke.Parent = InputFrame
+                
+                local TextBox = Instance.new("TextBox")
+                TextBox.Size = UDim2.new(1, -24, 1, 0)
+                TextBox.Position = UDim2.new(0, 12, 0, 0)
+                TextBox.BackgroundTransparency = 1
+                TextBox.Text = savedKeyData -- Tampilkan key lama jika ada (biar user tahu)
+                TextBox.PlaceholderText = "Enter key here..."
+                TextBox.PlaceholderColor3 = Colors.TextMuted
+                TextBox.Font = Enum.Font.GothamMedium
+                TextBox.TextSize = 14
+                TextBox.TextColor3 = Colors.TextWhite
+                TextBox.TextXAlignment = Enum.TextXAlignment.Left
+                TextBox.Parent = InputFrame
+                
+                TextBox.Focused:Connect(function()
+                    TweenService:Create(InputStroke, TweenInfo.new(0.25), {Color = Colors.StrokeActive}):Play()
+                end)
+                TextBox.FocusLost:Connect(function()
+                    TweenService:Create(InputStroke, TweenInfo.new(0.25), {Color = Colors.Stroke}):Play()
+                end)
+                
+                local ButtonContainer = Instance.new("Frame")
+                ButtonContainer.Size = UDim2.new(1, -10, 0, 44)
+                ButtonContainer.Position = UDim2.new(0, 5, 0, 155)
+                ButtonContainer.BackgroundTransparency = 1
+                ButtonContainer.Parent = KeyFrame
+                
+                local UIList = Instance.new("UIListLayout")
+                UIList.FillDirection = Enum.FillDirection.Horizontal
+                UIList.Padding = UDim.new(0, 12)
+                UIList.SortOrder = Enum.SortOrder.LayoutOrder
+                UIList.Parent = ButtonContainer
+                
+                local CopyBtn = Instance.new("TextButton")
+                CopyBtn.Size = UDim2.new(0.5, -6, 1, 0)
+                CopyBtn.BackgroundColor3 = Colors.ElementBG
+                CopyBtn.Text = "Copy Link"
+                CopyBtn.Font = Enum.Font.GothamBold
+                CopyBtn.TextSize = 13
+                CopyBtn.TextColor3 = Colors.TextWhite
+                CopyBtn.AutoButtonColor = false
+                CopyBtn.Parent = ButtonContainer
+                
+                local CopyCorner = Instance.new("UICorner")
+                CopyCorner.CornerRadius = UDim.new(0, 10)
+                CopyCorner.Parent = CopyBtn
+                
+                local CopyStroke = Instance.new("UIStroke")
+                CopyStroke.Color = Colors.Stroke
+                CopyStroke.Thickness = 1
+                CopyStroke.Parent = CopyBtn
+                
+                local VerifyBtn = Instance.new("TextButton")
+                VerifyBtn.Size = UDim2.new(0.5, -6, 1, 0)
+                VerifyBtn.BackgroundColor3 = Colors.Purple
+                VerifyBtn.Text = "Verify"
+                VerifyBtn.Font = Enum.Font.GothamBold
+                VerifyBtn.TextSize = 13
+                VerifyBtn.TextColor3 = Colors.TextWhite
+                VerifyBtn.AutoButtonColor = false
+                VerifyBtn.Parent = ButtonContainer
+                
+                local VerifyCorner = Instance.new("UICorner")
+                VerifyCorner.CornerRadius = UDim.new(0, 10)
+                VerifyCorner.Parent = VerifyBtn
+                
+                CopyBtn.MouseEnter:Connect(function() TweenService:Create(CopyBtn, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(35, 35, 50)}):Play() end)
+                CopyBtn.MouseLeave:Connect(function() TweenService:Create(CopyBtn, TweenInfo.new(0.2), {BackgroundColor3 = Colors.ElementBG}):Play() end)
+                CopyBtn.MouseButton1Click:Connect(function()
+                    ApiHandler.Copy()
+                    self:Notification({Title = "Key System", Content = "Link disalin!", Duration = 3})
+                    CopyBtn.Text = "Copied!"
+                    task.wait(1.5)
+                    CopyBtn.Text = "Copy Link"
+                end)
+                
+                VerifyBtn.MouseEnter:Connect(function() TweenService:Create(VerifyBtn, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(155, 75, 255)}):Play() end)
+                VerifyBtn.MouseLeave:Connect(function() TweenService:Create(VerifyBtn, TweenInfo.new(0.2), {BackgroundColor3 = Colors.Purple}):Play() end)
+                VerifyBtn.MouseButton1Click:Connect(function()
+                    VerifyBtn.Text = "..."
+                    local successKey, msg = ApiHandler.Verify(TextBox.Text)
+                    
+                    if successKey then
+                        VerifyBtn.Text = "Granted!"
+                        TweenService:Create(InputStroke, TweenInfo.new(0.2), {Color = Colors.Green}):Play()
+                        self:Notification({Title = "Key System", Content = "Akses diterima!", Duration = 4})
+                        
+                        -- SIMPAN KEY KE FILE LOKAL JIKA BERHASIL
+                        if writefile then
+                            writefile(keyFileName, TextBox.Text)
+                        end
+                        
+                        task.wait(0.8)
+                        
+                        KeyFrame:Destroy()
+                        FloatButton.Visible = true
+                        Container.Visible = true
+                        TabBar.Visible = true
+                    else
+                        VerifyBtn.Text = "Failed"
+                        TweenService:Create(InputStroke, TweenInfo.new(0.2), {Color = Colors.Red}):Play()
+                        self:Notification({Title = "Error", Content = msg or "Key salah atau kedaluwarsa.", Duration = 4})
+                        task.wait(1.5)
+                        VerifyBtn.Text = "Verify"
+                        TweenService:Create(InputStroke, TweenInfo.new(0.2), {Color = Colors.Stroke}):Play()
+                    end
+                end)
+            end
         end
     end
 
     return self
 end
 
--- Membuat Alias CreateWindow agar sinkron dengan pemanggilan skrip luar Anda
-QrinzUI.CreateWindow = QrinzUI.MakeWindow
+-- ALIAS/DUPLIKASI FUNGSI: Agar dipanggil CreateWindow atau MakeWindow sama-sama jalan!
+function QrinzUI:CreateWindow(options)
+    return self:MakeWindow(options)
+end
 
 function QrinzUI:Tab(options)
     local tab = {}
