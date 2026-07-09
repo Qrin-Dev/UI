@@ -58,7 +58,107 @@ local function MakeDraggable(topbarobject, object)
 end
 
 function QrinzUI:Notification(args)
-    warn("[QrinzUI Notification] " .. tostring(args.Title) .. " - " .. tostring(args.Content))
+    local title = args.Title or "Notification"
+    local content = args.Content or "..."
+    local duration = args.Duration or 3
+
+    -- Cari target parent agar notifikasi aman dari reset
+    local targetParent = nil
+    if gethui then
+        targetParent = gethui()
+    else
+        local success, _ = pcall(function() targetParent = CoreGui end)
+        if not success then targetParent = game.Players.LocalPlayer:WaitForChild("PlayerGui") end
+    end
+
+    -- Buat ScreenGui khusus notifikasi agar tidak terpengaruh saat window utama di-hide
+    local NotifGui = targetParent:FindFirstChild("QrinzUI_Notifications")
+    if not NotifGui then
+        NotifGui = Instance.new("ScreenGui")
+        NotifGui.Name = "QrinzUI_Notifications"
+        NotifGui.ResetOnSpawn = false
+        NotifGui.Parent = targetParent
+    end
+
+    -- Buat Holder (wadah penumpuk notifikasi di kanan bawah)
+    local Holder = NotifGui:FindFirstChild("NotifHolder")
+    if not Holder then
+        Holder = Instance.new("Frame")
+        Holder.Name = "NotifHolder"
+        Holder.Size = UDim2.new(0, 260, 1, -40)
+        Holder.Position = UDim2.new(1, -280, 0, 20)
+        Holder.BackgroundTransparency = 1
+        Holder.Parent = NotifGui
+
+        local ListLayout = Instance.new("UIListLayout")
+        ListLayout.SortOrder = Enum.SortOrder.LayoutOrder
+        ListLayout.VerticalAlignment = Enum.VerticalAlignment.Bottom
+        ListLayout.Padding = UDim.new(0, 12)
+        ListLayout.Parent = Holder
+    end
+
+    -- Frame Utama Notifikasi
+    local NotifFrame = Instance.new("Frame")
+    NotifFrame.Size = UDim2.new(1, 0, 0, 0) -- Mulai dari 0 untuk animasi masuk
+    NotifFrame.AutomaticSize = Enum.AutomaticSize.Y
+    NotifFrame.BackgroundColor3 = Colors.MainBG
+    NotifFrame.ClipsDescendants = true
+    NotifFrame.Parent = Holder
+
+    local Corner = Instance.new("UICorner")
+    Corner.CornerRadius = UDim.new(0, 8)
+    Corner.Parent = NotifFrame
+
+    local Stroke = Instance.new("UIStroke")
+    Stroke.Color = Colors.StrokeActive
+    Stroke.Thickness = 1.2
+    Stroke.Parent = NotifFrame
+
+    local Padding = Instance.new("UIPadding")
+    Padding.PaddingTop = UDim.new(0, 12)
+    Padding.PaddingBottom = UDim.new(0, 12)
+    Padding.PaddingLeft = UDim.new(0, 12)
+    Padding.PaddingRight = UDim.new(0, 12)
+    Padding.Parent = NotifFrame
+
+    local TitleLabel = Instance.new("TextLabel")
+    TitleLabel.Size = UDim2.new(1, 0, 0, 16)
+    TitleLabel.BackgroundTransparency = 1
+    TitleLabel.Text = title
+    TitleLabel.TextColor3 = Colors.TextWhite
+    TitleLabel.Font = Enum.Font.GothamBold
+    TitleLabel.TextSize = 13
+    TitleLabel.TextXAlignment = Enum.TextXAlignment.Left
+    TitleLabel.Parent = NotifFrame
+
+    local ContentLabel = Instance.new("TextLabel")
+    ContentLabel.Size = UDim2.new(1, 0, 0, 0)
+    ContentLabel.AutomaticSize = Enum.AutomaticSize.Y
+    ContentLabel.Position = UDim2.new(0, 0, 0, 22)
+    ContentLabel.BackgroundTransparency = 1
+    ContentLabel.Text = content
+    ContentLabel.TextColor3 = Colors.TextMuted
+    ContentLabel.Font = Enum.Font.Gotham
+    ContentLabel.TextSize = 12
+    ContentLabel.TextXAlignment = Enum.TextXAlignment.Left
+    ContentLabel.TextWrapped = true
+    ContentLabel.Parent = NotifFrame
+
+    -- Animasi Masuk (Pop-up)
+    TweenService:Create(NotifFrame, TweenInfo.new(0.3, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+        Size = UDim2.new(1, 0, 0, 50)
+    }):Play()
+
+    -- Waktu mundur untuk Animasi Keluar
+    task.delay(duration, function()
+        local fadeOut = TweenService:Create(NotifFrame, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {
+            Size = UDim2.new(1, 0, 0, 0)
+        })
+        fadeOut:Play()
+        fadeOut.Completed:Connect(function()
+            NotifFrame:Destroy()
+        end)
+    end)
 end
 
 function QrinzUI:MakeWindow(options)
