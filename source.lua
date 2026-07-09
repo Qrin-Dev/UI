@@ -1,230 +1,131 @@
--- =============================================================================
--- QRINZ UI LIBRARY BASE CODE (MODERN & FRESH THEME)
--- =============================================================================
-
-local QrinzUI = {}
-QrinzUI.__index = QrinzUI
-QrinzUI.Services = {}
-
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
-local Players = game:GetService("Players")
-local LocalPlayer = Players.LocalPlayer
-local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
+local CoreGui = game:GetService("CoreGui")
 
--- Color Palette (Diperterang agar lebih fresh dan efek glow terlihat)
+local QrinzUI = {}
+QrinzUI.Elements = {}
+QrinzUI.Services = {} -- Tempat untuk service Key System (jika ada)
+
+-- =============================================================================
+-- KONFIGURASI WARNA & VISUAL UTAMA
+-- =============================================================================
 local Colors = {
-    MainBG = Color3.fromRGB(16, 16, 24),
-    ElementBG = Color3.fromRGB(28, 28, 40),
-    Stroke = Color3.fromRGB(75, 75, 100),
-    StrokeActive = Color3.fromRGB(140, 60, 255),
+    MainBG = Color3.fromRGB(20, 20, 25),
+    ElementBG = Color3.fromRGB(30, 30, 35),
+    Stroke = Color3.fromRGB(50, 50, 60),
+    StrokeActive = Color3.fromRGB(100, 100, 255),
     TextWhite = Color3.fromRGB(255, 255, 255),
-    TextMuted = Color3.fromRGB(160, 165, 180),
-    Blue = Color3.fromRGB(0, 180, 255),
-    Purple = Color3.fromRGB(140, 60, 255),
-    Red = Color3.fromRGB(255, 75, 75),
-    Green = Color3.fromRGB(75, 255, 75)
+    TextMuted = Color3.fromRGB(150, 150, 150),
+    Purple = Color3.fromRGB(138, 43, 226),
+    Green = Color3.fromRGB(46, 204, 113),
+    Red = Color3.fromRGB(231, 76, 60)
 }
 
-local BluePurpleGradient = ColorSequence.new{
-    ColorSequenceKeypoint.new(0.0, Colors.Blue),
-    ColorSequenceKeypoint.new(1.0, Colors.Purple)
-}
+local BluePurpleGradient = ColorSequence.new({
+    ColorSequenceKeypoint.new(0, Color3.fromRGB(85, 85, 255)),
+    ColorSequenceKeypoint.new(1, Color3.fromRGB(170, 85, 255))
+})
 
--- Global Notification Container
-local NotifyGui = Instance.new("ScreenGui")
-NotifyGui.Name = "QrinzUINotifications"
-NotifyGui.ResetOnSpawn = false
-NotifyGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
-NotifyGui.Parent = PlayerGui
+-- =============================================================================
+-- FUNGSI DRAGGABLE
+-- =============================================================================
+local function MakeDraggable(topbarobject, object)
+    local Dragging = false
+    local DragInput
+    local DragStart
+    local StartPosition
 
-local NotifyContainer = Instance.new("Frame")
-NotifyContainer.Name = "NotifyContainer"
-NotifyContainer.Size = UDim2.new(0, 280, 0, 400)
-NotifyContainer.Position = UDim2.new(1, -290, 1, -20)
-NotifyContainer.AnchorPoint = Vector2.new(0, 1)
-NotifyContainer.BackgroundTransparency = 1
-NotifyContainer.Parent = NotifyGui
-
-local NotifyLayout = Instance.new("UIListLayout")
-NotifyLayout.VerticalAlignment = Enum.VerticalAlignment.Bottom
-NotifyLayout.SortOrder = Enum.SortOrder.LayoutOrder
-NotifyLayout.Padding = UDim.new(0, 8)
-NotifyLayout.Parent = NotifyContainer
-
--- Draggable Function
-local function MakeDraggable(uiInstance, targetFrame)
-    local dragging, dragInput, dragStart, startPos
-    uiInstance.InputBegan:Connect(function(input)
+    topbarobject.InputBegan:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-            dragging = true
-            dragStart = input.Position
-            startPos = targetFrame.Position
+            Dragging = true
+            DragStart = input.Position
+            StartPosition = object.Position
+
             input.Changed:Connect(function()
                 if input.UserInputState == Enum.UserInputState.End then
-                    dragging = false
+                    Dragging = false
                 end
             end)
         end
     end)
-    uiInstance.InputChanged:Connect(function(input)
+
+    topbarobject.InputChanged:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
-            dragInput = input
+            DragInput = input
         end
     end)
+
     UserInputService.InputChanged:Connect(function(input)
-        if input == dragInput and dragging then
-            local delta = input.Position - dragStart
-            TweenService:Create(targetFrame, TweenInfo.new(0.12, Enum.EasingStyle.Sine), {
-                Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
-            }):Play()
+        if input == DragInput and Dragging then
+            local delta = input.Position - DragStart
+            object.Position = UDim2.new(StartPosition.X.Scale, StartPosition.X.Offset + delta.X, StartPosition.Y.Scale, StartPosition.Y.Offset + delta.Y)
         end
     end)
 end
 
 -- =============================================================================
--- NOTIFICATION SYSTEM
+-- SISTEM NOTIFIKASI SEMENTARA
 -- =============================================================================
-function QrinzUI:Notification(options)
-    local title = options.Title or "Notification"
-    local content = options.Content or "Message body goes here."
-    local duration = options.Duration or 3
-
-    local NotifyFrame = Instance.new("Frame")
-    NotifyFrame.Size = UDim2.new(1, 0, 0, 0)
-    NotifyFrame.BackgroundColor3 = Colors.ElementBG
-    NotifyFrame.ClipsDescendants = true
-    NotifyFrame.Parent = NotifyContainer
-
-    local Corner = Instance.new("UICorner")
-    Corner.CornerRadius = UDim.new(0, 8)
-    Corner.Parent = NotifyFrame
-
-    local Stroke = Instance.new("UIStroke")
-    Stroke.Color = Colors.Stroke
-    Stroke.Thickness = 1.2
-    Stroke.Parent = NotifyFrame
-
-    local AccentBar = Instance.new("Frame")
-    AccentBar.Size = UDim2.new(0, 4, 1, 0)
-    AccentBar.Position = UDim2.new(0, 0, 0, 0)
-    AccentBar.BorderSizePixel = 0
-    AccentBar.Parent = NotifyFrame
-    local AccentGradient = Instance.new("UIGradient")
-    AccentGradient.Color = BluePurpleGradient
-    AccentGradient.Parent = AccentBar
-
-    local TitleLabel = Instance.new("TextLabel")
-    TitleLabel.Size = UDim2.new(1, -20, 0, 20)
-    TitleLabel.Position = UDim2.new(0, 12, 0, 8)
-    TitleLabel.Text = title
-    TitleLabel.Font = Enum.Font.GothamBold
-    TitleLabel.TextSize = 13
-    TitleLabel.TextColor3 = Colors.TextWhite
-    TitleLabel.TextXAlignment = Enum.TextXAlignment.Left
-    TitleLabel.BackgroundTransparency = 1
-    TitleLabel.Parent = NotifyFrame
-
-    local ContentLabel = Instance.new("TextLabel")
-    ContentLabel.Size = UDim2.new(1, -20, 0, 32)
-    ContentLabel.Position = UDim2.new(0, 12, 0, 26)
-    ContentLabel.Text = content
-    ContentLabel.Font = Enum.Font.Gotham
-    ContentLabel.TextSize = 11
-    ContentLabel.TextColor3 = Colors.TextMuted
-    ContentLabel.TextWrapped = true
-    ContentLabel.TextXAlignment = Enum.TextXAlignment.Left
-    ContentLabel.TextYAlignment = Enum.TextYAlignment.Top
-    ContentLabel.BackgroundTransparency = 1
-    ContentLabel.Parent = NotifyFrame
-
-    TweenService:Create(NotifyFrame, TweenInfo.new(0.3, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {
-        Size = UDim2.new(1, 0, 0, 68)
-    }):Play()
-
-    task.delay(duration, function()
-        local closeTween = TweenService:Create(NotifyFrame, TweenInfo.new(0.3, Enum.EasingStyle.Quart, Enum.EasingDirection.In), {
-            Size = UDim2.new(1, 0, 0, 0),
-            BackgroundTransparency = 1
-        })
-        closeTween:Play()
-        closeTween.Completed:Connect(function()
-            NotifyFrame:Destroy()
-        end)
-    end)
+function QrinzUI:Notification(args)
+    -- Ini adalah sistem notifikasi default jika belum ada modul notifikasi eksternal
+    warn("[QrinzUI Notification] " .. tostring(args.Title) .. " - " .. tostring(args.Content))
 end
 
 -- =============================================================================
--- WINDOW CREATION & KEY SYSTEM
+-- MAIN WINDOW MAKER
 -- =============================================================================
-function QrinzUI:CreateWindow(options)
-    local window = setmetatable({}, { __index = self })
+function QrinzUI:MakeWindow(options)
+    local window = {
+        Visible = true,
+        ToggleIcon = options.ToggleIcon or "rbxassetid://10618928818" -- Icon Default
+    }
+    options = options or {}
     
-    window.Title = options.Title or "Qrinz Window"
-    window.Author = options.Author or ""
-    window.Visible = true
-    window.ToggleIcon = options.ToggleIcon or "rbxassetid://10734896206"
-    window.CurrentTab = nil
-
+    -- MAIN GUI TIER
     local ScreenGui = Instance.new("ScreenGui")
-    ScreenGui.Name = "QrinzUIHub"
+    ScreenGui.Name = "QrinzUI_Window"
     ScreenGui.ResetOnSpawn = false
-    ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
-    ScreenGui.Parent = PlayerGui
-    window.ScreenGui = ScreenGui
-
+    -- Otomatis mendeteksi apakah dijalankan di exploit (CoreGui) atau Studio (PlayerGui)
+    local success, err = pcall(function() ScreenGui.Parent = CoreGui end)
+    if not success then ScreenGui.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui") end
+    
     local MainFrame = Instance.new("Frame")
     MainFrame.Name = "MainFrame"
     MainFrame.Size = UDim2.new(0, 310, 0, 370)
     MainFrame.Position = UDim2.new(0.5, -155, 0.5, -185)
     MainFrame.BackgroundColor3 = Colors.MainBG
-    MainFrame.BorderSizePixel = 0
     MainFrame.ClipsDescendants = true
     MainFrame.Parent = ScreenGui
     window.MainFrame = MainFrame
-    
+
     local MainCorner = Instance.new("UICorner")
-    MainCorner.CornerRadius = UDim.new(0, 12)
+    MainCorner.CornerRadius = UDim.new(0, 10)
     MainCorner.Parent = MainFrame
-    
+
     local MainStroke = Instance.new("UIStroke")
+    MainStroke.Color = Colors.Stroke
     MainStroke.Thickness = 1.5
-    MainStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
     MainStroke.Parent = MainFrame
-    local StrokeGradient = Instance.new("UIGradient")
-    StrokeGradient.Color = BluePurpleGradient
-    StrokeGradient.Parent = MainStroke
 
     local TopBar = Instance.new("Frame")
     TopBar.Name = "TopBar"
     TopBar.Size = UDim2.new(1, 0, 0, 50)
     TopBar.BackgroundTransparency = 1
     TopBar.Parent = MainFrame
-    
-    local TitleLabel = Instance.new("TextLabel")
-    TitleLabel.Size = UDim2.new(1, -30, 0, 25)
-    TitleLabel.Position = UDim2.new(0, 15, 0, 8)
-    TitleLabel.Text = window.Title
-    TitleLabel.Font = Enum.Font.GothamBold
-    TitleLabel.TextSize = 16
-    TitleLabel.TextColor3 = Colors.TextWhite
-    TitleLabel.TextXAlignment = Enum.TextXAlignment.Left
-    TitleLabel.BackgroundTransparency = 1
-    TitleLabel.Parent = TopBar
 
-    if window.Author ~= "" then
-        local AuthorLabel = Instance.new("TextLabel")
-        AuthorLabel.Size = UDim2.new(1, -30, 0, 15)
-        AuthorLabel.Position = UDim2.new(0, 15, 0, 27)
-        AuthorLabel.Text = window.Author
-        AuthorLabel.Font = Enum.Font.Gotham
-        AuthorLabel.TextSize = 11
-        AuthorLabel.TextColor3 = Colors.TextMuted
-        AuthorLabel.TextXAlignment = Enum.TextXAlignment.Left
-        AuthorLabel.BackgroundTransparency = 1
-        AuthorLabel.Parent = TopBar
-    end
+    local Title = Instance.new("TextLabel")
+    Title.Name = "Title"
+    Title.Size = UDim2.new(1, -30, 1, 0)
+    Title.Position = UDim2.new(0, 15, 0, 0)
+    Title.Text = options.Name or "Qrinz Hub"
+    Title.Font = Enum.Font.GothamBold
+    Title.TextSize = 14
+    Title.TextColor3 = Colors.TextWhite
+    Title.TextXAlignment = Enum.TextXAlignment.Left
+    Title.BackgroundTransparency = 1
+    Title.Parent = TopBar
 
+    -- ==================== KODE ASLI ANDA DIMULAI DARI SINI ====================
     local Divider = Instance.new("Frame")
     Divider.Size = UDim2.new(1, -30, 0, 1)
     Divider.Position = UDim2.new(0, 15, 0, 49)
@@ -243,7 +144,7 @@ function QrinzUI:CreateWindow(options)
     TabBar.ScrollingDirection = Enum.ScrollingDirection.X
     TabBar.CanvasSize = UDim2.new(0, 0, 0, 0)
     TabBar.Parent = MainFrame
-    window.TabBar = TabBar
+    self.TabBar = TabBar -- Diperbaiki menjadi self.TabBar untuk kompatibilitas QrinzUI:Tab()
 
     local TabList = Instance.new("UIListLayout")
     TabList.FillDirection = Enum.FillDirection.Horizontal
@@ -268,7 +169,7 @@ function QrinzUI:CreateWindow(options)
     Container.BackgroundTransparency = 1
     Container.ClipsDescendants = true
     Container.Parent = MainFrame
-    window.Container = Container
+    self.Container = Container -- Diperbaiki menjadi self.Container
 
     local FloatButton = Instance.new("ImageButton")
     FloatButton.Name = "FloatToggleButton"
@@ -318,9 +219,10 @@ function QrinzUI:CreateWindow(options)
         TabBar.Visible = false
         
         local KeyConfig = options.KeySystem
-        local ApiData = KeyConfig.API[1]
-        local Service = QrinzUI.Services[ApiData.Type]
+        local ApiData = KeyConfig.API and KeyConfig.API[1]
         
+        -- Fallback jika service tidak ditemukan
+        local Service = QrinzUI.Services[ApiData and ApiData.Type or "None"] 
         if Service then
             local ApiHandler = Service.New(ApiData.ServiceId, ApiData.SuperId)
             
@@ -437,9 +339,9 @@ function QrinzUI:CreateWindow(options)
             VerifyBtn.MouseLeave:Connect(function() TweenService:Create(VerifyBtn, TweenInfo.new(0.2), {BackgroundColor3 = Colors.Purple}):Play() end)
             VerifyBtn.MouseButton1Click:Connect(function()
                 VerifyBtn.Text = "..."
-                local success, msg = ApiHandler.Verify(TextBox.Text)
+                local successKey, msg = ApiHandler.Verify(TextBox.Text)
                 
-                if success then
+                if successKey then
                     VerifyBtn.Text = "Granted!"
                     TweenService:Create(InputStroke, TweenInfo.new(0.2), {Color = Colors.Green}):Play()
                     self:Notification({Title = "Key System", Content = "Akses diterima!", Duration = 4})
@@ -543,9 +445,10 @@ function QrinzUI:Tab(options)
     return tab
 end
 
-QrinzUI.Elements = {}
+-- =============================================================================
+-- ELEMENTS
+-- =============================================================================
 
--- [[ TEXT INPUT ADDED HERE ]] --
 function QrinzUI.Elements:Input(options)
     local callback = options.Callback or function() end
     local placeholder = options.Placeholder or "Enter text..."
@@ -622,7 +525,6 @@ function QrinzUI.Elements:Input(options)
         end
     }
 end
--- [[ END OF TEXT INPUT ]] --
 
 function QrinzUI.Elements:Toggle(options)
     local state = options.Value or false
