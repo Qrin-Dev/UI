@@ -68,7 +68,7 @@ function QrinzUI:MakeWindow(options)
         ToggleIcon = options.ToggleIcon or "rbxassetid://10618928818"
     }
     
-    -- Pembersihan UI lama agar saat di-load dari github tidak bertumpuk
+    -- Pembersihan UI lama agar saat di-load tidak bertumpuk
     local targetParent = nil
     if gethui then
         targetParent = gethui()
@@ -87,6 +87,7 @@ function QrinzUI:MakeWindow(options)
     ScreenGui.Name = "QrinzUI_Window"
     ScreenGui.ResetOnSpawn = false
     ScreenGui.Parent = targetParent
+    self.ScreenGui = ScreenGui -- Disimpan agar fungsi destruksi luar tidak error
     
     local MainFrame = Instance.new("Frame")
     MainFrame.Name = "MainFrame"
@@ -116,7 +117,7 @@ function QrinzUI:MakeWindow(options)
     Title.Name = "Title"
     Title.Size = UDim2.new(1, -30, 1, 0)
     Title.Position = UDim2.new(0, 15, 0, 0)
-    Title.Text = options.Name or "Qrinz Hub"
+    Title.Text = options.Title or options.Name or "Qrinz Hub"
     Title.Font = Enum.Font.GothamBold
     Title.TextSize = 14
     Title.TextColor3 = Colors.TextWhite
@@ -359,6 +360,9 @@ function QrinzUI:MakeWindow(options)
 
     return self
 end
+
+-- Membuat Alias CreateWindow agar sinkron dengan pemanggilan skrip luar Anda
+QrinzUI.CreateWindow = QrinzUI.MakeWindow
 
 function QrinzUI:Tab(options)
     local tab = {}
