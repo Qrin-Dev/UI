@@ -4,11 +4,8 @@ local CoreGui = game:GetService("CoreGui")
 
 local QrinzUI = {}
 QrinzUI.Elements = {}
-QrinzUI.Services = {} -- Tempat untuk service Key System (jika ada)
+QrinzUI.Services = {}
 
--- =============================================================================
--- KONFIGURASI WARNA & VISUAL UTAMA
--- =============================================================================
 local Colors = {
     MainBG = Color3.fromRGB(20, 20, 25),
     ElementBG = Color3.fromRGB(30, 30, 35),
@@ -26,9 +23,6 @@ local BluePurpleGradient = ColorSequence.new({
     ColorSequenceKeypoint.new(1, Color3.fromRGB(170, 85, 255))
 })
 
--- =============================================================================
--- FUNGSI DRAGGABLE
--- =============================================================================
 local function MakeDraggable(topbarobject, object)
     local Dragging = false
     local DragInput
@@ -63,31 +57,36 @@ local function MakeDraggable(topbarobject, object)
     end)
 end
 
--- =============================================================================
--- SISTEM NOTIFIKASI SEMENTARA
--- =============================================================================
 function QrinzUI:Notification(args)
-    -- Ini adalah sistem notifikasi default jika belum ada modul notifikasi eksternal
     warn("[QrinzUI Notification] " .. tostring(args.Title) .. " - " .. tostring(args.Content))
 end
 
--- =============================================================================
--- MAIN WINDOW MAKER
--- =============================================================================
 function QrinzUI:MakeWindow(options)
+    options = options or {}
     local window = {
         Visible = true,
-        ToggleIcon = options.ToggleIcon or "rbxassetid://10618928818" -- Icon Default
+        ToggleIcon = options.ToggleIcon or "rbxassetid://10618928818"
     }
-    options = options or {}
     
-    -- MAIN GUI TIER
+    -- Pembersihan UI lama agar saat di-load dari github tidak bertumpuk
+    local targetParent = nil
+    if gethui then
+        targetParent = gethui()
+    else
+        local success, _ = pcall(function() targetParent = CoreGui end)
+        if not success then targetParent = game.Players.LocalPlayer:WaitForChild("PlayerGui") end
+    end
+
+    for _, v in pairs(targetParent:GetChildren()) do
+        if v.Name == "QrinzUI_Window" then
+            v:Destroy()
+        end
+    end
+
     local ScreenGui = Instance.new("ScreenGui")
     ScreenGui.Name = "QrinzUI_Window"
     ScreenGui.ResetOnSpawn = false
-    -- Otomatis mendeteksi apakah dijalankan di exploit (CoreGui) atau Studio (PlayerGui)
-    local success, err = pcall(function() ScreenGui.Parent = CoreGui end)
-    if not success then ScreenGui.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui") end
+    ScreenGui.Parent = targetParent
     
     local MainFrame = Instance.new("Frame")
     MainFrame.Name = "MainFrame"
@@ -125,7 +124,6 @@ function QrinzUI:MakeWindow(options)
     Title.BackgroundTransparency = 1
     Title.Parent = TopBar
 
-    -- ==================== KODE ASLI ANDA DIMULAI DARI SINI ====================
     local Divider = Instance.new("Frame")
     Divider.Size = UDim2.new(1, -30, 0, 1)
     Divider.Position = UDim2.new(0, 15, 0, 49)
@@ -134,7 +132,6 @@ function QrinzUI:MakeWindow(options)
     Divider.BorderSizePixel = 0
     Divider.Parent = TopBar
 
-    -- TAB BAR NAVIGATION (Scroll ke Samping)
     local TabBar = Instance.new("ScrollingFrame")
     TabBar.Name = "TabBar"
     TabBar.Size = UDim2.new(1, -20, 0, 35)
@@ -144,7 +141,7 @@ function QrinzUI:MakeWindow(options)
     TabBar.ScrollingDirection = Enum.ScrollingDirection.X
     TabBar.CanvasSize = UDim2.new(0, 0, 0, 0)
     TabBar.Parent = MainFrame
-    self.TabBar = TabBar -- Diperbaiki menjadi self.TabBar untuk kompatibilitas QrinzUI:Tab()
+    self.TabBar = TabBar 
 
     local TabList = Instance.new("UIListLayout")
     TabList.FillDirection = Enum.FillDirection.Horizontal
@@ -161,7 +158,6 @@ function QrinzUI:MakeWindow(options)
         TabBar.CanvasSize = UDim2.new(0, TabList.AbsoluteContentSize.X, 0, 0)
     end)
 
-    -- CONTAINER UTAMA
     local Container = Instance.new("Frame")
     Container.Name = "Container"
     Container.Size = UDim2.new(1, -20, 1, -100)
@@ -169,7 +165,7 @@ function QrinzUI:MakeWindow(options)
     Container.BackgroundTransparency = 1
     Container.ClipsDescendants = true
     Container.Parent = MainFrame
-    self.Container = Container -- Diperbaiki menjadi self.Container
+    self.Container = Container 
 
     local FloatButton = Instance.new("ImageButton")
     FloatButton.Name = "FloatToggleButton"
@@ -213,7 +209,6 @@ function QrinzUI:MakeWindow(options)
     MakeDraggable(TopBar, MainFrame)
     MakeDraggable(FloatButton, FloatButton)
 
-    -- INTEGRASI KEY SYSTEM
     if options.KeySystem then
         Container.Visible = false
         TabBar.Visible = false
@@ -221,8 +216,7 @@ function QrinzUI:MakeWindow(options)
         local KeyConfig = options.KeySystem
         local ApiData = KeyConfig.API and KeyConfig.API[1]
         
-        -- Fallback jika service tidak ditemukan
-        local Service = QrinzUI.Services[ApiData and ApiData.Type or "None"] 
+        local Service = self.Services[ApiData and ApiData.Type or "None"] 
         if Service then
             local ApiHandler = Service.New(ApiData.ServiceId, ApiData.SuperId)
             
@@ -363,12 +357,9 @@ function QrinzUI:MakeWindow(options)
         end
     end
 
-    return window
+    return self
 end
 
--- =============================================================================
--- BASE MENU ELEMENTS
--- =============================================================================
 function QrinzUI:Tab(options)
     local tab = {}
     
@@ -439,15 +430,11 @@ function QrinzUI:Tab(options)
     end
 
     tab.Page = TabPage
-    for k, v in pairs(QrinzUI.Elements) do
+    for k, v in pairs(self.Elements) do
         tab[k] = v
     end
     return tab
 end
-
--- =============================================================================
--- ELEMENTS
--- =============================================================================
 
 function QrinzUI.Elements:Input(options)
     local callback = options.Callback or function() end
