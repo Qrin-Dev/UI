@@ -756,4 +756,196 @@ function QrinzUI.Elements:Dropdown(options)
     end
 end
 
+function QrinzUI.Elements:Paragraph(options)
+    local titleText = options.Title or "Paragraph"
+    local descText = options.Desc or ""
+    
+    -- Konfigurasi Warna Kustom (Mengambil dari tabel Colors jika ada)
+    local titleColor = Colors.TextWhite
+    if options.Color and Colors[options.Color] then
+        titleColor = Colors[options.Color]
+    end
+
+    local isLocked = options.Locked or false
+
+    -- Container Utama Paragraph
+    local ParaFrame = Instance.new("Frame")
+    ParaFrame.Name = options.Title .. "_Paragraph"
+    ParaFrame.Size = UDim2.new(1, 0, 0, 0)
+    ParaFrame.AutomaticSize = Enum.AutomaticSize.Y
+    ParaFrame.BackgroundColor3 = Colors.ElementBG
+    ParaFrame.Parent = self.Page
+
+    local ParaCorner = Instance.new("UICorner")
+    ParaCorner.CornerRadius = UDim.new(0, 8)
+    ParaCorner.Parent = ParaFrame
+
+    local ParaStroke = Instance.new("UIStroke")
+    ParaStroke.Color = isLocked and Colors.Red or Colors.Stroke
+    ParaStroke.Thickness = 1.2
+    ParaStroke.Parent = ParaFrame
+
+    local ParaPadding = Instance.new("UIPadding")
+    ParaPadding.PaddingTop = UDim.new(0, 12)
+    ParaPadding.PaddingBottom = UDim.new(0, 12)
+    ParaPadding.PaddingLeft = UDim.new(0, 12)
+    ParaPadding.PaddingRight = UDim.new(0, 12)
+    ParaPadding.Parent = ParaFrame
+
+    local ParaLayout = Instance.new("UIListLayout")
+    ParaLayout.SortOrder = Enum.SortOrder.LayoutOrder
+    ParaLayout.Padding = UDim.new(0, 10)
+    ParaLayout.Parent = ParaFrame
+
+    -- Container untuk Thumbnail & Teks
+    local ContentFrame = Instance.new("Frame")
+    ContentFrame.Name = "ContentFrame"
+    ContentFrame.Size = UDim2.new(1, 0, 0, 0)
+    ContentFrame.AutomaticSize = Enum.AutomaticSize.Y
+    ContentFrame.BackgroundTransparency = 1
+    ContentFrame.LayoutOrder = 1
+    ContentFrame.Parent = ParaFrame
+
+    local ContentLayout = Instance.new("UIListLayout")
+    ContentLayout.FillDirection = Enum.FillDirection.Horizontal
+    ContentLayout.SortOrder = Enum.SortOrder.LayoutOrder
+    ContentLayout.Padding = UDim.new(0, 12)
+    ContentLayout.VerticalAlignment = Enum.VerticalAlignment.Top
+    ContentLayout.Parent = ContentFrame
+
+    -- Thumbnail (Jika ada)
+    local thumbSizeOffset = 0
+    if options.Thumbnail and options.Thumbnail ~= "" then
+        local tSize = options.ThumbnailSize or 40
+        thumbSizeOffset = tSize + 12 -- 12 adalah ukuran padding
+        
+        local ThumbImage = Instance.new("ImageLabel")
+        ThumbImage.Size = UDim2.new(0, tSize, 0, tSize)
+        ThumbImage.BackgroundTransparency = 1
+        ThumbImage.Image = options.Thumbnail
+        ThumbImage.LayoutOrder = 1
+        ThumbImage.Parent = ContentFrame
+
+        local ThumbCorner = Instance.new("UICorner")
+        ThumbCorner.CornerRadius = UDim.new(0, 6)
+        ThumbCorner.Parent = ThumbImage
+    end
+
+    -- Container Teks (Title & Desc)
+    local TextContainer = Instance.new("Frame")
+    TextContainer.Size = UDim2.new(1, -thumbSizeOffset, 0, 0)
+    TextContainer.AutomaticSize = Enum.AutomaticSize.Y
+    TextContainer.BackgroundTransparency = 1
+    TextContainer.LayoutOrder = 2
+    TextContainer.Parent = ContentFrame
+
+    local TextLayout = Instance.new("UIListLayout")
+    TextLayout.SortOrder = Enum.SortOrder.LayoutOrder
+    TextLayout.Padding = UDim.new(0, 4)
+    TextLayout.Parent = TextContainer
+
+    local TitleLbl = Instance.new("TextLabel")
+    TitleLbl.Size = UDim2.new(1, 0, 0, 0)
+    TitleLbl.AutomaticSize = Enum.AutomaticSize.Y
+    TitleLbl.BackgroundTransparency = 1
+    TitleLbl.Text = isLocked and (titleText .. " [LOCKED]") or titleText
+    TitleLbl.TextColor3 = titleColor
+    TitleLbl.Font = Enum.Font.GothamBold
+    TitleLbl.TextSize = 13
+    TitleLbl.TextXAlignment = Enum.TextXAlignment.Left
+    TitleLbl.TextWrapped = true
+    TitleLbl.LayoutOrder = 1
+    TitleLbl.Parent = TextContainer
+
+    if descText ~= "" then
+        local DescLbl = Instance.new("TextLabel")
+        DescLbl.Size = UDim2.new(1, 0, 0, 0)
+        DescLbl.AutomaticSize = Enum.AutomaticSize.Y
+        DescLbl.BackgroundTransparency = 1
+        DescLbl.Text = descText
+        DescLbl.TextColor3 = isLocked and Color3.fromRGB(100, 100, 100) or Colors.TextMuted
+        DescLbl.Font = Enum.Font.Gotham
+        DescLbl.TextSize = 12
+        DescLbl.TextXAlignment = Enum.TextXAlignment.Left
+        DescLbl.TextWrapped = true
+        DescLbl.LayoutOrder = 2
+        DescLbl.Parent = TextContainer
+    end
+
+    -- Gambar Banner Besar (Jika ada)
+    if options.Image and options.Image ~= "" then
+        local iSize = options.ImageSize or 100
+        
+        local BannerImage = Instance.new("ImageLabel")
+        BannerImage.Size = UDim2.new(1, 0, 0, iSize)
+        BannerImage.BackgroundTransparency = 1
+        BannerImage.Image = options.Image
+        BannerImage.ScaleType = Enum.ScaleType.Crop
+        BannerImage.LayoutOrder = 2
+        BannerImage.Parent = ParaFrame
+
+        local BannerCorner = Instance.new("UICorner")
+        BannerCorner.CornerRadius = UDim.new(0, 6)
+        BannerCorner.Parent = BannerImage
+    end
+
+    -- Kumpulan Tombol (Jika ada)
+    if options.Buttons and type(options.Buttons) == "table" and #options.Buttons > 0 then
+        local BtnContainer = Instance.new("Frame")
+        BtnContainer.Size = UDim2.new(1, 0, 0, 0)
+        BtnContainer.AutomaticSize = Enum.AutomaticSize.Y
+        BtnContainer.BackgroundTransparency = 1
+        BtnContainer.LayoutOrder = 3
+        BtnContainer.Parent = ParaFrame
+
+        local btnCount = #options.Buttons
+        local BtnLayout = Instance.new("UIListLayout")
+        BtnLayout.FillDirection = Enum.FillDirection.Horizontal
+        BtnLayout.SortOrder = Enum.SortOrder.LayoutOrder
+        BtnLayout.Padding = UDim.new(0, 8)
+        BtnLayout.Parent = BtnContainer
+
+        for i, btnData in ipairs(options.Buttons) do
+            local ActionBtn = Instance.new("TextButton")
+            -- Membagi ukuran tombol rata secara horizontal dengan kalkulasi padding
+            ActionBtn.Size = UDim2.new(1 / btnCount, -((btnCount - 1) * 8 / btnCount), 0, 32)
+            ActionBtn.BackgroundColor3 = isLocked and Color3.fromRGB(20, 20, 25) or Colors.MainBG
+            ActionBtn.Text = btnData.Title or "Button"
+            ActionBtn.Font = Enum.Font.GothamBold
+            ActionBtn.TextSize = 12
+            ActionBtn.TextColor3 = isLocked and Color3.fromRGB(100, 100, 100) or Colors.TextWhite
+            ActionBtn.AutoButtonColor = false
+            ActionBtn.Parent = BtnContainer
+
+            local ActCorner = Instance.new("UICorner")
+            ActCorner.CornerRadius = UDim.new(0, 6)
+            ActCorner.Parent = ActionBtn
+
+            local ActStroke = Instance.new("UIStroke")
+            ActStroke.Color = isLocked and Color3.fromRGB(40, 40, 40) or Colors.Stroke
+            ActStroke.Thickness = 1
+            ActStroke.Parent = ActionBtn
+
+            if not isLocked then
+                ActionBtn.MouseEnter:Connect(function()
+                    TweenService:Create(ActionBtn, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(45, 45, 60)}):Play()
+                    TweenService:Create(ActStroke, TweenInfo.new(0.2), {Color = Colors.StrokeActive}):Play()
+                end)
+                ActionBtn.MouseLeave:Connect(function()
+                    TweenService:Create(ActionBtn, TweenInfo.new(0.2), {BackgroundColor3 = Colors.MainBG}):Play()
+                    TweenService:Create(ActStroke, TweenInfo.new(0.2), {Color = Colors.Stroke}):Play()
+                end)
+                ActionBtn.MouseButton1Click:Connect(function()
+                    TweenService:Create(ActionBtn, TweenInfo.new(0.1), {BackgroundColor3 = Colors.Purple}):Play()
+                    task.wait(0.1)
+                    TweenService:Create(ActionBtn, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(45, 45, 60)}):Play()
+                    if btnData.Callback then
+                        btnData.Callback()
+                    end
+                end)
+            end
+        end
+    end
+end
+
 return QrinzUI
